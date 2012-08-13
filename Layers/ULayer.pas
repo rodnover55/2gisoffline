@@ -1,0 +1,296 @@
+unit ULayer;
+
+interface
+
+uses
+  UGrymBaseControl, GrymCore_TLB, USymbolCollection;
+
+type
+  TLayer = class(TGrymBaseControl, ILayer, IPluginShapeLayer
+    , IPluginShapeCursor)
+    FVisible: Boolean;
+    FSymbols: TSymbolCollection;
+    FEnumerator: TSymbolCollection.TEnumerator;
+  public
+    constructor Create(ID: string; Caption: string; Description: string = '');
+    destructor Destroy; override;
+    procedure Rename(Caption: string);
+    function GetSymbols: TSymbolCollection;
+    function GetID: string;
+  // ILayer
+    function Get_VisibleState(out pVal: WordBool): HResult; stdcall;
+    function Set_VisibleState(pVal: WordBool): HResult; stdcall;
+    function CheckVisible(nScale: Integer; nType: DeviceType; out pVal: WordBool): HResult; stdcall;
+  // IPluginShapeLayer
+    function CheckLabelVisible(lScale: Integer; devType: DeviceType; out pVal: WordBool): HResult; stdcall;
+    function Get_Selectable(out pVal: WordBool): HResult; stdcall;
+    function Get_ScalableSymbol(out pVal: WordBool): HResult; stdcall;
+    function Get_ReferenceScale(out pVal: Integer): HResult; stdcall;
+    function QueryShapes(const pRect: IMapRect; out pCursor: IPluginShapeCursor): HResult; stdcall;
+    function QueryShapeById(nOID: Integer; out pCursor: IPluginShapeCursor): HResult; stdcall;
+  // IPluginShapeCursor
+    function Next(const pShape: IShapeFill; out pOk: WordBool): HResult; stdcall;
+    function Get_ShapeInfo(out pVal: WideString): HResult; stdcall;
+    function Get_Label_(out pVal: WideString): HResult; stdcall;
+    function Get_LabelAnchor(out pVal: IMapPoint): HResult; stdcall;
+    function Get_TextSymbol(out pVal: ITextSymbol): HResult; stdcall;
+    function Get_MarkerSymbol(out pVal: IMarkerSymbol): HResult; stdcall;
+    function Get_LineSymbol(out pVal: ILineSymbol): HResult; stdcall;
+    function Get_FillSymbol(out pVal: IFillSymbol): HResult; stdcall;
+  end;
+
+implementation
+
+uses
+  SysUtils, USymbol, Windows, ActiveX, USymbolPoint, USymbolText
+    , Graphics, USymbolLine;
+
+{ TLayer }
+
+function TLayer.CheckLabelVisible(lScale: Integer; devType: DeviceType;
+  out pVal: WordBool): HResult;
+begin
+  try
+    pVal := False;
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.CheckVisible(nScale: Integer; nType: DeviceType;
+  out pVal: WordBool): HResult;
+begin
+  try
+    pVal := True;
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+constructor TLayer.Create(ID, Caption, Description: string);
+begin
+  inherited;
+  Self.FVisible := True;
+  Self.FSymbols := TSymbolCollection.Create;
+end;
+
+destructor TLayer.Destroy;
+begin
+  FreeAndNil(Self.FSymbols);
+  inherited;
+end;
+
+function TLayer.GetID: string;
+begin
+  Result := Self.FID;
+end;
+
+function TLayer.GetSymbols: TSymbolCollection;
+begin
+  Result := Self.FSymbols;
+end;
+
+function TLayer.Get_FillSymbol(out pVal: IFillSymbol): HResult;
+begin
+  try
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.Get_LabelAnchor(out pVal: IMapPoint): HResult;
+begin
+  try
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.Get_Label_(out pVal: WideString): HResult;
+begin
+  try
+    pVal := Self.FEnumerator.Current.GetLabel;
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.Get_LineSymbol(out pVal: ILineSymbol): HResult;
+begin
+  try
+    if not Self.FEnumerator.Current.GetDimension = ComponentDimensionLine then
+    begin
+      Exit(E_INVALIDARG);
+    end;
+
+    pVal := (Self.FEnumerator.Current as TSymbolLine).GetLineSymbol;
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.Get_MarkerSymbol(out pVal: IMarkerSymbol): HResult;
+begin
+  try
+    if not Self.FEnumerator.Current.GetDimension = ComponentDimensionPoint then
+    begin
+      Exit(E_INVALIDARG);
+    end;
+
+    pVal := (Self.FEnumerator.Current as TSymbolPoint).GetMarkerSymbol;
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.Get_ReferenceScale(out pVal: Integer): HResult;
+begin
+  try
+    Result := E_NOTIMPL;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.Get_ScalableSymbol(out pVal: WordBool): HResult;
+begin
+  try
+    pVal := False;
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.Get_Selectable(out pVal: WordBool): HResult;
+begin
+  try
+    pVal := False;
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.Get_ShapeInfo(out pVal: WideString): HResult;
+begin
+  try
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.Get_TextSymbol(out pVal: ITextSymbol): HResult;
+begin
+  try
+    pVal := Self.FEnumerator.Current.GetTextSymbol;
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.Get_VisibleState(out pVal: WordBool): HResult;
+begin
+  try
+    pVal := Self.FVisible;
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.Next(const pShape: IShapeFill; out pOk: WordBool): HResult;
+var
+  Symbol: TSymbol;
+begin
+  try
+    Result := S_OK;
+
+    pOk := Self.FEnumerator.MoveNext;
+
+    if not pOk then
+    begin
+      Exit;
+    end;
+
+    Symbol := Self.FEnumerator.Current;
+
+    Symbol.ShapeFill(pShape);
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.QueryShapeById(nOID: Integer;
+  out pCursor: IPluginShapeCursor): HResult;
+begin
+  try
+    Result := E_NOTIMPL;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+function TLayer.QueryShapes(const pRect: IMapRect;
+  out pCursor: IPluginShapeCursor): HResult;
+begin
+  try
+    if Self.FSymbols.QueryShapes(pRect) > 0 then
+    begin
+      pCursor := Self;
+      Self.FEnumerator := Self.FSymbols.GetObjects.GetEnumerator;
+      Result := S_OK;
+    end
+    else
+    begin
+      pCursor := nil;
+      Result := S_FALSE;
+    end;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+procedure TLayer.Rename(Caption: string);
+begin
+  Self.FCaption := Caption;
+end;
+
+function TLayer.Set_VisibleState(pVal: WordBool): HResult;
+begin
+  try
+    Self.FVisible := pVal;
+    Result := S_OK;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
+end.
+
