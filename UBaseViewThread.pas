@@ -4,18 +4,20 @@ interface
 
 uses
   UInterfaceWrapper, GrymCore_TLB, UBaseViewFrame, UGrymObjectFactory
-    , UBaseReference;
+    , UBaseReference, UGrymDatabase;
 
 type
   TBaseViewThread = class(TInterfaceWrapper<IBaseViewThread>)
     FFrame: TBaseViewFrame;
     FFactory: TGrymObjectFactory;
     FBaseReference: TBaseReference;
+    FDatabase: TGrymDatabase;
   public
     destructor Destroy; override;
     function GetFrame: TBaseViewFrame;
     function GetFactory: TGrymObjectFactory;
     function GetBaseReference: TBaseReference;
+    function GetDatabase: TGrymDatabase;
   end;
 
 implementation
@@ -30,6 +32,7 @@ begin
   FreeAndNil(Self.FFrame);
   FreeAndNil(Self.FFactory);
   FreeAndNil(Self.FBaseReference);
+  FreeAndNil(Self.FDatabase);
   inherited;
 end;
 
@@ -43,6 +46,19 @@ begin
     Self.FBaseReference := TBaseReference.Create(BaseReference);
   end;
   Result := Self.FBaseReference;
+end;
+
+function TBaseViewThread.GetDatabase: TGrymDatabase;
+var
+  pDatabase: IDatabase;
+begin
+  if not Assigned(Self.FDatabase) then
+  begin
+    OleCheck(Self.GetInterface.Get_Database(pDatabase));
+    Self.FDatabase := TGrymDatabase.Create(pDatabase);
+  end;
+
+  Result := Self.FDatabase;
 end;
 
 function TBaseViewThread.GetFactory: TGrymObjectFactory;

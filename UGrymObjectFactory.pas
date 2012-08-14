@@ -19,6 +19,7 @@ type
     function CreateSimpleLineSymbol(Style: SimpleLineStyle; Width: Double
       ; Color: TColor): ISimpleLineSymbol;
     function CreateRasterFromFile(FileName: string): IRaster;
+    function GetRaster(Resource: string): IRaster;
     function CreateDevPoint(X: Integer; Y: Integer): TDevPoint;
     function CreateMapPoint(X: Double; Y: Double): TMapPoint;
   end;
@@ -26,7 +27,7 @@ type
 implementation
 
 uses
-  SysUtils, ComObj, ActiveX, Windows;
+  SysUtils, ComObj, ActiveX, Windows, Classes;
 
 { TGrymObjectFactory }
 
@@ -107,6 +108,25 @@ begin
   end;
 
   Result := Self.FFactory2;
+end;
+
+function TGrymObjectFactory.GetRaster(Resource: string): IRaster;
+var
+  SA: SAFEARRAY;
+  RS: TResourceStream;
+begin
+  RS := TResourceStream.Create(HInstance, Resource, RT_RCDATA);
+  try
+    ZeroMemory(@sa, sizeof(sa));
+    sa.cDims := 1;
+    sa.cbElements := 1;
+    sa.pvData := rs.Memory;
+    sa.rgsabound[0].cElements := rs.Size;
+    OleCheck(Self.GetInterface
+      .CreateRasterFromMemory(@sa, Result));
+  finally
+    FreeAndNil(RS);
+  end;
 end;
 
 end.

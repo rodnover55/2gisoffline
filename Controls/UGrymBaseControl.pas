@@ -11,6 +11,7 @@ type
     FCaption: string;
     FID: string;
     FDescription: string;
+    FRaster: IRaster;
 
     FPlacement: string;
 
@@ -22,6 +23,7 @@ type
 
     procedure SetPlacement(Value: string);
     function GetPlacement: string;
+    function SetIcon(Raster: IRaster): TGrymBaseControl;
 
     function SetSize(Min: Integer): TGrymBaseControl; overload;
     function SetSize(Min: Integer; Max: Integer): TGrymBaseControl; overload;
@@ -114,7 +116,7 @@ end;
 function TGrymBaseControl.Get_Icon(out pVal: IInterface): HResult;
 begin
   try
-    pVal := nil;
+    pVal := Self.FRaster;
     Result := S_OK;
   except
     ShowException(ExceptObject, ExceptAddr);
@@ -144,9 +146,14 @@ begin
   end;
 end;
 
+function TGrymBaseControl.SetIcon(Raster: IRaster): TGrymBaseControl;
+begin
+  Self.FRaster := Raster;
+  Result := Self;
+end;
+
 procedure TGrymBaseControl.SetPlacement(Value: string);
 begin
-  OutputDebugStringW(PWideChar(Self.FID + ': ' + Value));
   Self.FPlacement := Value;
 end;
 

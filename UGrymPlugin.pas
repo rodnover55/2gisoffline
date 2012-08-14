@@ -57,7 +57,7 @@ type
 
     destructor Destroy; override;
 
-    function GetRaster(Resource: WideString): IRaster;
+    function GetRaster(Resource: WideString): IRaster; deprecated;
     function IsInit: Boolean;
 
     function SetRunController(Controller: TBaseController): TGrymPlugin;
