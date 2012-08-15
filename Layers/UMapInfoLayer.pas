@@ -7,10 +7,11 @@ uses
 
 type
   TMapInfoLayer = class(TGrymBaseControl, IMapInfoLayerBlock
-    , IMapInfoLayerBlockProp)
+    , IMapInfoLayerBlockProp, IChildControl)
   private
     FVisible: Boolean;
     FFiller: IMapInfoLayerFiller;
+    FParent: IUnknown;
 
     type
       TEmptyMapInfoController = class(TInterfacedObject, IMapInfoController)
@@ -26,8 +27,10 @@ type
     var
       MapInfoController: TEmptyMapInfoController;
   public
+    function SetParent(Parent: IUnknown): TMapInfoLayer;
     procedure AddByID(ID: Integer); overload;
     procedure AddByID(ID: Integer; Raster: IRaster); overload;
+    procedure RemoveAll;
     constructor Create(ID: string; Caption: string; Description: string = '');
   // IMapInfoLayerBlock
     function SetFiller(const pVal: IMapInfoLayerFiller): HResult; stdcall;
@@ -35,7 +38,10 @@ type
     function Get_VisibleState(out pVal: WordBool): HResult; stdcall;
     function Set_VisibleState(pVal: WordBool): HResult; stdcall;
   // IMapInfoLayerBlockProp
-    function CheckVisible(lScale: Integer; nType: DeviceType; out pVal: WordBool): HResult; stdcall;
+    function CheckVisible(lScale: Integer; nType: DeviceType
+      ; out pVal: WordBool): HResult; stdcall;
+  // IChildControl
+    function Get_ParentControl(out pVal: IUnknown): HResult; stdcall;
   end;
 
 implementation
@@ -90,6 +96,25 @@ begin
   end;
 end;
 
+function TMapInfoLayer.Get_ParentControl(out pVal: IInterface): HResult;
+begin
+  try
+    pVal := Self.FParent;
+
+    if Assigned(pVal) then
+    begin
+      Result := S_OK;
+    end
+    else
+    begin
+      Result := S_FALSE;
+    end;
+  except
+    ShowException(ExceptObject, ExceptAddr);
+    Result := S_FALSE;
+  end;
+end;
+
 function TMapInfoLayer.Get_VisibleState(out pVal: WordBool): HResult;
 begin
   try
@@ -101,6 +126,11 @@ begin
   end;
 end;
 
+procedure TMapInfoLayer.RemoveAll;
+begin
+  OleCheck(Self.FFiller.RemoveAll);
+end;
+
 function TMapInfoLayer.SetFiller(const pVal: IMapInfoLayerFiller): HResult;
 begin
   try
@@ -110,6 +140,12 @@ begin
     ShowException(ExceptObject, ExceptAddr);
     Result := S_FALSE;
   end;
+end;
+
+function TMapInfoLayer.SetParent(Parent: IInterface): TMapInfoLayer;
+begin
+  Self.FParent := Parent;
+  Result := Self;
 end;
 
 function TMapInfoLayer.Set_VisibleState(pVal: WordBool): HResult;

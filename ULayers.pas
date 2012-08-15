@@ -3,7 +3,7 @@ unit ULayers;
 interface
 
 uses
-  UInterfaceWrapper, GrymCore_TLB, ULayer, UMapInfoLayer;
+  UInterfaceWrapper, GrymCore_TLB, ULayer, UMapInfoLayer, UGrymBaseControl;
 
 // TODO: Объединить слои в один массив.
 type
@@ -14,13 +14,10 @@ type
     class var MaxIDPlacement: Integer;
 
     function GetMapInfoLayer: IMapInfoLayer;
+    procedure SetPlacement(Layer: TGrymBaseControl);
   public
-    constructor Create(P: ILayerCollection); overload;
-    constructor Create; overload;
-
-    destructor Destroy; override;
-    procedure AddLayer(Layer: ILayer);
-    procedure RemoveLayer(Layer: ILayer);
+    procedure AddLayer(Layer: TLayer);
+    procedure RemoveLayer(Layer: TLayer);
 
     procedure AddMapInfoLayer(Layer: TMapInfoLayer);
     procedure RemoveMapInfoLayer(Layer: TMapInfoLayer);
@@ -35,35 +32,16 @@ uses
 
 { TLayers }
 
-procedure TLayers.AddLayer(Layer: ILayer);
+procedure TLayers.AddLayer(Layer: TLayer);
 begin
+  Self.SetPlacement(Layer);
   OleCheck(Self.GetInterface.AddLayer(Layer));
 end;
 
 procedure TLayers.AddMapInfoLayer(Layer: TMapInfoLayer);
 begin
-  if Layer.GetPlacement = EmptyStr then
-  begin
-    Inc(TLayers.MaxIDPlacement);
-    Layer.SetPlacement(Format('1105%4d:0', [TLayers.MaxIDPlacement]));
-  end;
-
+  Self.SetPlacement(Layer);
   OleCheck(Self.GetMapInfoLayer.Register(Layer));
-end;
-
-constructor TLayers.Create(P: ILayerCollection);
-begin
-  inherited;
-end;
-
-constructor TLayers.Create;
-begin
-  inherited;
-end;
-
-destructor TLayers.Destroy;
-begin
-  inherited;
 end;
 
 function TLayers.FindLayer(Tag: string): ILayer;
@@ -84,7 +62,7 @@ begin
   Result := Self.FMapInfoLayer;
 end;
 
-procedure TLayers.RemoveLayer(Layer: ILayer);
+procedure TLayers.RemoveLayer(Layer: TLayer);
 begin
   OleCheck(Self.GetInterface.RemoveLayer(Layer));
 end;
@@ -94,4 +72,14 @@ begin
   OleCheck(Self.GetMapInfoLayer.Unregister(Layer));
 end;
 
+procedure TLayers.SetPlacement(Layer: TGrymBaseControl);
+begin
+  if Layer.GetPlacement = EmptyStr then
+  begin
+    Inc(TLayers.MaxIDPlacement);
+    Layer.SetPlacement(Format('1105%4d:0', [TLayers.MaxIDPlacement]));
+  end;
+end;
+
 end.
+
