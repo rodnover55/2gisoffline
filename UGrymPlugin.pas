@@ -89,7 +89,7 @@ type
 implementation
 
 uses
-  ComObj, URibbonBar, UGrymControlTab, UBasePlacementControl;
+  ComObj, URibbonBar, UGrymControlTab, UBasePlacementControl, Forms;
 
 constructor TGrymPlugin.Create(Tag: string; Name: string
   ; Languages: array of string; Description: string = ''
@@ -140,6 +140,7 @@ var
 begin
   Result := S_OK;
   try
+    Application.ModalPopupMode := TPopupMode.pmAuto;
     Self.InnerInitialize(pRoot, pBaseView);
 
     OleCheck(Self.BaseViewThread.GetFrame.GetInterface

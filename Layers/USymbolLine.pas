@@ -69,10 +69,12 @@ begin
   end;
 
   Self.ListPoints.Clear;
+
   for Point in Self.FPoints do
   begin
     S := TSymbolPoint.Create(Point.X, Point.Y
-      , TGrymPlugin.GetInstance.GetRaster('LINE_POINT'));
+      , TGrymPlugin.GetInstance.BaseViewThread.GetFactory
+        .GetRaster('LINE_POINT'));
     Self.ListPoints.Add(S);
     L.Add(S);
   end;

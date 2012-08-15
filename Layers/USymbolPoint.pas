@@ -31,7 +31,8 @@ begin
   end
   else
   begin
-    Self.FRaster := TGrymPlugin.GetInstance.GetRaster('TEXT_RASTER');
+    Self.FRaster := TGrymPlugin.GetInstance.BaseViewThread
+      .GetFactory.GetRaster('TEXT_RASTER');
   end;
 
   Self.FpMarkerSymbol := nil;

@@ -26,7 +26,8 @@ type
     var
       MapInfoController: TEmptyMapInfoController;
   public
-    procedure AddByID(ID: Integer);
+    procedure AddByID(ID: Integer); overload;
+    procedure AddByID(ID: Integer; Raster: IRaster); overload;
     constructor Create(ID: string; Caption: string; Description: string = '');
   // IMapInfoLayerBlock
     function SetFiller(const pVal: IMapInfoLayerFiller): HResult; stdcall;
@@ -47,6 +48,11 @@ uses
 procedure TMapInfoLayer.AddByID(ID: Integer);
 begin
   OleCheck(Self.FFiller.AddByID(ID));
+end;
+
+procedure TMapInfoLayer.AddByID(ID: Integer; Raster: IRaster);
+begin
+  OleCheck((Self.FFiller as IMapInfoLayerFiller2).AddByID2(ID, Raster));
 end;
 
 function TMapInfoLayer.CheckVisible(lScale: Integer; nType: DeviceType;
