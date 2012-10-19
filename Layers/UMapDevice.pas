@@ -34,8 +34,6 @@ end;
 function TMapDevice.DeviceToMap(Point: TDevPoint): TMapPoint;
 var
   Pnt: IMapPoint;
-  Pnt2: TDevPoint;
-  Pnt3: IDevPoint;
 begin
   OleCheck(Self.GetInterface.DeviceToMap(Point, Pnt));
   Result := TMapPoint.Create(Pnt);

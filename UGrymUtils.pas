@@ -34,6 +34,8 @@ begin
   Callout := TGrymPlugin.GetInstance.BaseViewThread.GetFrame
     .GetMap.CreateCallout(Point);
 
+  Callout.AddCloseButton;
+
   if Tag <> EmptyStr then
   begin
     Callout.SetTag(Tag);

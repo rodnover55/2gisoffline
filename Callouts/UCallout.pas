@@ -10,6 +10,8 @@ type
   public
     function AddTab(Title: string): TCalloutTab;
     procedure SetTag(Tag: string);
+    function AddStandartButton(Button: CalloutStandardButtonType): Integer;
+    function AddCloseButton: Integer;
   end;
 
 implementation
@@ -17,6 +19,16 @@ implementation
 uses
   ComObj;
 { TCallout }
+
+function TCallout.AddCloseButton: Integer;
+begin
+  Result := Self.AddStandartButton(CalloutStandardButtonTypeClose);
+end;
+
+function TCallout.AddStandartButton(Button: CalloutStandardButtonType): Integer;
+begin
+  OleCheck(Self.GetInterface.AddStandardButton(Button, Result));
+end;
 
 function TCallout.AddTab(Title: string): TCalloutTab;
 var
