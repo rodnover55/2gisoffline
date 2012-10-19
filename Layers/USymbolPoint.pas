@@ -20,6 +20,11 @@ implementation
 uses
   ComObj, UGrymPlugin;
 
+{$IfNDef GRYM_RESOURCES}
+{$Define GRYM_RESOURCES}
+{$R Resources.RES}
+{$EndIf}
+
 { TSymbolPoint }
 
 constructor TSymbolPoint.Create(StartX, StartY: Double; Raster: IRaster = nil);
@@ -31,6 +36,7 @@ begin
   end
   else
   begin
+    Self.FRaster := nil;
     Self.FRaster := TGrymPlugin.GetInstance.BaseViewThread
       .GetFactory.GetRaster('TEXT_RASTER');
   end;
@@ -45,7 +51,7 @@ end;
 
 function TSymbolPoint.GetMarkerSymbol: IRasterMarkerSymbol;
 begin
-  if not Assigned(Self.FpMarkerSymbol) then
+  if Assigned(Self.FRaster) and not Assigned(Self.FpMarkerSymbol) then
   begin
     Self.FpMarkerSymbol := TGrymPlugin.GetInstance.BaseViewThread.GetFactory
       .CreateRasterMarkerSymbol(Self.FRaster, 1.0);

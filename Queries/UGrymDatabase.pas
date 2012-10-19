@@ -3,22 +3,85 @@ unit UGrymDatabase;
 interface
 
 uses
-  UInterfaceWrapper, GrymCore_TLB;
+  UInterfaceWrapper, GrymCore_TLB, UGrymTable, UGrymMapBuilding, UGrymStreet;
+
 type
+  TGrymMapBuildingsTable = TBaseGrymTable<TGrymMapBuilding>;
+  TGrymStreetsTable = TBaseGrymTable<TGrymStreet>;
   TGrymDatabase = class(TInterfaceWrapper<IDatabase>)
   private
+  // TODO: создать TGrymQuery = class(TGrymTable) переместить запросы туда.
     FQueryMapBuilding: IQuery;
+    FQuerySpatial: IQuery;
+    FQueryMicroDistrict: IQuery;
+    FTableBuildings: TGrymMapBuildingsTable;
+    FTableStreets: TGrymStreetsTable;
+  protected
   public
     function QueryMapBuildingID(City: string; Street: string; Number: string)
       : Integer;
+
+    function QueryDistrictName(Feature: IFeature): string;
+    function QueryMicroDistrictName(Feature: IFeature): string;
+
+    function GetTableBuildings: TGrymMapBuildingsTable;
+    function GetTableStreets: TGrymStreetsTable;
   end;
 
 implementation
 
 uses
-  ComObj;
+  ComObj, UGrymPlugin, SysUtils, UMapPoint;
 
 { TGrymDatabase }
+
+
+function TGrymDatabase.GetTableBuildings: TGrymMapBuildingsTable;
+begin
+  if not Assigned(Self.FTableBuildings) then
+  begin
+    Self.FTableBuildings := TGrymMapBuildingsTable.Create(nil);
+    Self.FTableBuildings.OpenTable('grym_map_building');
+  end;
+  Result := Self.FTableBuildings;
+end;
+
+function TGrymDatabase.GetTableStreets: TGrymStreetsTable;
+begin
+  if not Assigned(Self.FTableStreets) then
+  begin
+    Self.FTableStreets := TGrymStreetsTable.Create(nil);
+    Self.FTableStreets.OpenTable('grym_map_street');
+  end;
+  Result := Self.FTableStreets;
+end;
+
+function TGrymDatabase.QueryDistrictName(Feature: IFeature): string;
+var
+  Layer: ILayer;
+  District: IDataRow;
+  Data: OleVariant;
+begin
+  if not Assigned(Self.FQuerySpatial) then
+  begin
+    OleCheck(Self.GetInterface.CreateQuery('spatial', Self.FQuerySpatial));
+  end;
+
+  Layer := TGrymPlugin.GetInstance.BaseViewThread.GetFrame.GetMap.GetLayers
+    .FindLayer('Grym_Map_UMLRADM0');
+
+  OleCheck(Self.FQuerySpatial.AddCriterion('layer', OLEVariant(Layer)));
+  OleCheck(Self.FQuerySpatial.AddCriterion('filter', OLEVariant(Feature)));
+  OleCheck(Self.FQuerySpatial.Execute);
+
+  Result := EmptyStr;
+
+  if Self.FQuerySpatial.Fetch(District) = S_OK then
+  begin
+    OleCheck(District.Get_Value('name', Data));
+    Result := Data;
+  end;
+end;
 
 function TGrymDatabase.QueryMapBuildingID(City, Street,
   Number: string): Integer;
@@ -37,10 +100,40 @@ begin
   OleCheck(Self.FQueryMapBuilding.Execute);
 
   Result := -1;
+
   if Self.FQueryMapBuilding.Fetch(Building) = S_OK then
   begin
     OleCheck(Building.Get_Index(Result));
   end;
 end;
 
+function TGrymDatabase.QueryMicroDistrictName(Feature: IFeature): string;
+var
+  Layer: ILayer;
+  District: IDataRow;
+  Data: OleVariant;
+begin
+  if not Assigned(Self.FQuerySpatial) then
+  begin
+    OleCheck(Self.GetInterface.CreateQuery('spatial', Self.FQuerySpatial));
+  end;
+
+  Layer := TGrymPlugin.GetInstance.BaseViewThread.GetFrame.GetMap.GetLayers
+    .FindLayer('Grym_Map_UMLRLREG');
+
+  OleCheck(Self.FQuerySpatial.AddCriterion('layer', OLEVariant(Layer)));
+  OleCheck(Self.FQuerySpatial.AddCriterion('filter', OLEVariant(Feature)));
+  OleCheck(Self.FQuerySpatial.Execute);
+
+  Result := EmptyStr;
+
+  if Self.FQuerySpatial.Fetch(District) = S_OK then
+  begin
+    OleCheck(District.Get_Value('name', Data));
+    Result := Data;
+  end;
+end;
+
 end.
+
+

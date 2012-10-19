@@ -38,6 +38,11 @@ implementation
 uses
   Variants, USymbolPoint, SysUtils, UGrymPlugin;
 
+{$IfNDef GRYM_RESOURCES}
+{$Define GRYM_RESOURCES}
+{$R Resources.RES}
+{$EndIf}
+
 { TSymbolLine }
 
 constructor TSymbolLine.Create(StartX, StartY: Double; Style: SimpleLineStyle;
@@ -72,9 +77,9 @@ begin
 
   for Point in Self.FPoints do
   begin
-    S := TSymbolPoint.Create(Point.X, Point.Y
-      , TGrymPlugin.GetInstance.BaseViewThread.GetFactory
-        .GetRaster('LINE_POINT'));
+    S := TSymbolPoint.Create(Point.X, Point.Y, nil);
+//      , TGrymPlugin.GetInstance.BaseViewThread.GetFactory
+//        .GetRaster('LINE_POINT'));
     Self.ListPoints.Add(S);
     L.Add(S);
   end;

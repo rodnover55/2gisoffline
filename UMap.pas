@@ -4,8 +4,8 @@ interface
 
 uses
   UInterfaceWrapper, GrymCore_TLB, ULayers, UMapTools, UMapPoint, UPopupMenu
-    , UDevPoint, UMapCoordinateTransformationGeo
-      , UMapCoordinateTransformationUTM;
+    , UDevPoint, UMapCoordinateTransformationGeo, UMapRect, UGrymGraphic
+      , UMapCoordinateTransformationUTM, UMapInfoControllers, UCallout;
 
 type
   TMap = class(TInterfaceWrapper<IMap>)
@@ -14,6 +14,7 @@ type
     FPopupMenu: TPopupMenu;
     FCoordinateTransformationGEO: TMapCoordinateTransformationGeo;
     FCoordinateTransformationUTM: TMapCoordinateTransformationUTM;
+    FMapInfoControllers: TMapInfoControllers;
   public
     destructor Destroy; override;
 
@@ -24,10 +25,19 @@ type
     function Handle: THandle;
     function CoordinateTransformationGEO: TMapCoordinateTransformationGeo;
     function CoordinateTransformationUTM: TMapCoordinateTransformationUTM;
+    function FullExtend: TMapRect;
+
+    function MapInfoControllers: TMapInfoControllers;
   // IDeviceMap
     function DeviceToMap(Pnt: TDevPoint): TMapPoint;
     function MapToDevice(Pnt: TMapPoint): TDevPoint;
     procedure Invalidate(Full: Boolean = False);
+  // IMapGraphics
+    procedure AddGraphic(Graphic: IGraphicBase);
+    procedure RemoveGraphic(Graphic: IGraphicBase);
+    function CreateCallout(Point: TMapPoint; AutoClose: Boolean = True
+      ; Vector: TDevPoint = nil; pSize: IDevSize = nil): TCallout;
+    function GraphicByTag(Tag: string): IGraphicBase;
   end;
 
 implementation
@@ -36,6 +46,11 @@ uses
   SysUtils, ComObj;
 
 { TMap }
+
+procedure TMap.AddGraphic(Graphic: IGraphicBase);
+begin
+  OleCheck((Self.GetInterface as IMapGraphics).AddGraphic(Graphic));
+end;
 
 function TMap.ContextMenu: TPopupMenu;
 var
@@ -84,6 +99,17 @@ begin
   Result := Self.FCoordinateTransformationUTM;
 end;
 
+function TMap.CreateCallout(Point: TMapPoint; AutoClose: Boolean;
+  Vector: TDevPoint; pSize: IDevSize): TCallout;
+var
+  Callout: ICallout;
+begin
+  OleCheck((Self.GetInterface as IMapGraphics).CreateCallout(Point, AutoClose
+    , Vector, pSize, Callout));
+
+  Result := TCallout.Create(Callout);
+end;
+
 destructor TMap.Destroy;
 begin
   FreeAndNil(Self.FTools);
@@ -98,8 +124,16 @@ function TMap.DeviceToMap(Pnt: TDevPoint): TMapPoint;
 var
   MapPoint: IMapPoint;
 begin
-  OleCheck((Self.GetInterface as IMapDevice).DeviceToMap(Pnt.GetInterface, MapPoint));
+  OleCheck((Self.GetInterface as IMapDevice).DeviceToMap(Pnt, MapPoint));
   Result := TMapPoint.Create(MapPoint);
+end;
+
+function TMap.FullExtend: TMapRect;
+var
+  MapRect: IMapRect;
+begin
+  OleCheck(Self.GetInterface.Get_FullExtent(MapRect));
+  Result := TMapRect.Create(MapRect);
 end;
 
 function TMap.GetLayers: TLayers;
@@ -119,13 +153,29 @@ function TMap.GetTools: TMapTools;
 var
   pTools: IMapTools;
 begin
-  if not Assigned(Self.FLayers) then
+  if not Assigned(Self.FTools) then
   begin
     OleCheck(Self.GetInterface.Get_Tools(pTools));
     Self.FTools := TMapTools.Create(pTools);
   end;
 
   Result := Self.FTools;
+end;
+
+function TMap.GraphicByTag(Tag: string): IGraphicBase;
+var
+  Res: HRESULT;
+begin
+  Res := (Self.GetInterface as IMapGraphics).Get_GraphicByTag(Tag, Result);
+
+  if Res = S_FALSE  then
+  begin
+    Result := nil
+  end
+  else if Res <> S_OK then
+  begin
+    OleCheck(Res);
+  end;
 end;
 
 function TMap.Handle: THandle;
@@ -138,12 +188,30 @@ begin
   OleCheck(Self.GetInterface.Invalidate(Full));
 end;
 
+function TMap.MapInfoControllers: TMapInfoControllers;
+var
+  pMapInfoControllers: IMapInfoControllers;
+begin
+  if not Assigned(Self.FMapInfoControllers) then
+  begin
+    OleCheck(Self.GetInterface.Get_MapInfoControllers(pMapInfoControllers));
+    Self.FMapInfoControllers := TMapInfoControllers.Create(pMapInfoControllers);
+  end;
+
+  Result := Self.FMapInfoControllers;
+end;
+
 function TMap.MapToDevice(Pnt: TMapPoint): TDevPoint;
 var
   DevPoint: IDevPoint;
 begin
-  OleCheck((Self.GetInterface as IMapDevice).MapToDevice(Pnt.GetInterface, DevPoint));
+  OleCheck((Self.GetInterface as IMapDevice).MapToDevice(Pnt, DevPoint));
   Result := TDevPoint.Create(DevPoint);
+end;
+
+procedure TMap.RemoveGraphic(Graphic: IGraphicBase);
+begin
+  OleCheck((Self.GetInterface as IMapGraphics).RemoveGraphic(Graphic));
 end;
 
 end.

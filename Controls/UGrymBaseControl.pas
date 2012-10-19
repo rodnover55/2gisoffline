@@ -8,6 +8,9 @@ uses
 type
   TGrymBaseControl = class(TInterfacedObject, IControlPlacement
     , IControlAppearance)
+  private
+    function GetCaption: string;
+  protected
     FCaption: string;
     FID: string;
     FDescription: string;
@@ -42,7 +45,7 @@ type
     function GetMaxWidth: Integer;
     function GetHeightInRow: Integer;
 
-    property Caption: string read FCaption;
+    property Caption: string read GetCaption;
   end;
 
 implementation
@@ -61,6 +64,11 @@ begin
   Self.FMinWidth := 0;
   Self.FMaxWidth := 0;
   Self.FHeightInRow := 0;
+end;
+
+function TGrymBaseControl.GetCaption: string;
+begin
+  Result := ' ' + Self.FCaption;
 end;
 
 function TGrymBaseControl.GetHeightInRow: Integer;
@@ -86,7 +94,7 @@ end;
 function TGrymBaseControl.Get_Caption(out pVal: WideString): HResult;
 begin
   try
-    pVal := ' ' + Self.FCaption;
+    pVal := Self.Caption;
     Result := S_OK;
   except
     ShowException(ExceptObject, ExceptAddr);

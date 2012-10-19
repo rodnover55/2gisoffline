@@ -29,8 +29,10 @@ type
     FCopyright: string;
     FTag: string;
     FLanguages: string;
+    FIsRefreshInstance: Boolean;
 
-    class var FPlugin: TGrymPlugin;
+    class var
+      FPlugin: TGrymPlugin;
 
     const PLUGIN_INFO: WideString
       = '<grym_plugin_info>'
@@ -50,6 +52,8 @@ type
   public
     constructor Create(Tag: string; Name: string; Languages: array of string
       ; Description: string = ''; Copyright: string = '');
+
+    constructor Launch(BaseName: string);
     procedure FillRibbon(Manager: TGrymControlsManager);
 
     procedure InnerInitialize(const Root: IGrym; const BaseView: IBaseViewThread);
@@ -104,6 +108,7 @@ begin
   Self.FTag := Tag;
   Self.FDescription := Description;
   Self.FCopyright := Copyright;
+  Self.FIsRefreshInstance := True;
 
   LanguagesBuilder := TStringBuilder.Create;
 
@@ -122,9 +127,6 @@ end;
 
 destructor TGrymPlugin.Destroy;
 begin
-  FreeAndNil(Self.FRunController);
-  FreeAndNil(Self.FOptionController);
-  FreeAndNil(Self.FRefreshController);
   inherited;
 end;
 
@@ -190,6 +192,10 @@ end;
 function TGrymPlugin.Terminate: HResult; stdcall;
 begin
   try
+    FreeAndNil(Self.FOptionController);
+    FreeAndNil(Self.FRunController);
+    FreeAndNil(Self.FRefreshController);
+
     Self.InnerTerminate;
 
     if Assigned(Self.FPoint) then
@@ -198,7 +204,6 @@ begin
       Self.FPoint := nil;
     end;
 
-    FreeAndNil(Self.FRunController);
     Result := S_OK;
   except
     ShowException(ExceptObject, ExceptAddr);
@@ -233,6 +238,31 @@ begin
   Result := Assigned(Self.pRoot) and Self.fBaseViewThread.IsSet;
 end;
 
+constructor TGrymPlugin.Launch(BaseName: string);
+var
+  pRoot: IGrym;
+  pBaseView: IBaseViewThread;
+  pBaseCollection: IBaseCollection;
+  pBaseReference: IBaseReference;
+begin
+  inherited Create;
+
+  CoInitialize(nil);
+
+  OleCheck(CoCreateInstance(CLASS_GRYM, nil, CLSCTX_INPROC_SERVER or
+      CLSCTX_LOCAL_SERVER, IID_IGrym, pRoot));
+
+  OleCheck(pRoot.Get_BaseCollection(pBaseCollection));
+  OleCheck(pBaseCollection.FindBase(BaseName, pBaseReference));
+  OleCheck(pRoot.GetBaseView(pBaseReference, True, False, pBaseView));
+
+  Self.FIsRefreshInstance := False;
+  Self.InnerInitialize(pRoot, pBaseView);
+
+  Assert(not Assigned(TGrymPlugin.FPlugin), 'Экземляр 2ГИС уже создан');
+  TGrymPlugin.FPlugin := Self;
+end;
+
 function TGrymPlugin.OptionDialog(out pRet: WordBool): HResult;
 begin
   try
@@ -244,9 +274,10 @@ begin
     Result := S_OK;
   except
     ShowException(ExceptObject, ExceptAddr);
-    Result := E_FAIL;
+    Result := S_OK;
   end;
 end;
+
 function TGrymPlugin.QueryInterface(const IID: TGUID; out Obj): HResult;
 begin
   try
@@ -287,7 +318,10 @@ end;
 
 procedure TGrymPlugin.RefreshInstance;
 begin
-  TGrymPlugin.FPlugin := Self;
+  if Self.FIsRefreshInstance then
+  begin
+    TGrymPlugin.FPlugin := Self;
+  end;
 
   if Assigned(Self.FRefreshController) then
   begin

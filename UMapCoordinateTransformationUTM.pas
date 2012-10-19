@@ -25,7 +25,7 @@ function TMapCoordinateTransformationUTM.LocalToUTM(
 var
   OutPoint: IMapPoint;
 begin
-  OleCheck(Self.GetInterface.UTMToLocal(Point.GetInterface, OutPoint));
+  OleCheck(Self.GetInterface.LocalToUTM(Point, OutPoint));
   Result := TMapPoint.Create(OutPoint);
 end;
 
@@ -34,7 +34,7 @@ function TMapCoordinateTransformationUTM.UTMToLocal(
 var
   OutPoint: IMapPoint;
 begin
-  OleCheck(Self.GetInterface.LocalToUTM(Point.GetInterface, OutPoint));
+  OleCheck(Self.GetInterface.UTMToLocal(Point, OutPoint));
   Result := TMapPoint.Create(OutPoint);
 end;
 

@@ -17,8 +17,10 @@ type
 
     function CreateGroup(
       Group: TBasePlacementControl<TGrymControlBaseGroup>): IRibbonGroup;
+    procedure Init(ID: string; Caption: string);
   public
-    constructor Create(ID: string; Caption: string);
+    constructor Create(P: IRibbonTab); overload;
+    constructor Create(ID: string; Caption: string); overload;
     destructor Destroy; override;
 
     function GetEnumerator: TEnumerator
@@ -50,10 +52,13 @@ end;
 constructor TGrymControlTab.Create(ID: string; Caption: string);
 begin
   inherited Create;
+  Self.Init(ID, Caption);
+end;
 
-  Self.FID := ID;
-  Self.FCaption := Caption;
-  Self.Groups := TGrymGroupList.Create;
+constructor TGrymControlTab.Create(P: IRibbonTab);
+begin
+  inherited;
+  Self.Init('', '');
 end;
 
 function TGrymControlTab.CreateGroup(
@@ -96,6 +101,13 @@ begin
   Self.FPlacementManager := TGroupsPlacement<TGrymControlBaseGroup>
     .Create(Self.Groups);
   Result := Self.FPlacementManager.GetEnumerator;
+end;
+
+procedure TGrymControlTab.Init(ID, Caption: string);
+begin
+  Self.FID := ID;
+  Self.FCaption := Caption;
+  Self.Groups := TGrymGroupList.Create;
 end;
 
 procedure TGrymControlTab.Insert(Index: Integer; Group: TGrymControlBaseGroup);

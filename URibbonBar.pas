@@ -9,6 +9,8 @@ type
   TRibbonBar = class(TInterfaceWrapper<IRibbonBar>)
   public
     function CreateTab(Tab: TBasePlacementControl<TGrymControlTab>): IRibbonTab;
+    function GetTab(Tag: string): TGrymControlTab;
+    function GetToolTab: TGrymControlTab;
   end;
 
 implementation
@@ -27,6 +29,19 @@ begin
   Control.SetInterface(Result);
 // Добавляем группы
   Control.Fill;
+end;
+
+function TRibbonBar.GetTab(Tag: string): TGrymControlTab;
+var
+  pRibbonTab: IRibbonTab;
+begin
+  OleCheck(Self.GetInterface.Get_Tab(Tag, pRibbonTab));
+  Result := TGrymControlTab.Create(pRibbonTab);
+end;
+
+function TRibbonBar.GetToolTab: TGrymControlTab;
+begin
+  Result := Self.GetTab('Grym.ToolsTab');
 end;
 
 end.

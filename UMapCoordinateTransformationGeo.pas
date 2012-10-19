@@ -25,7 +25,7 @@ function TMapCoordinateTransformationGeo.GeoToLocal(
 var
   OutPoint: IMapPoint;
 begin
-  OleCheck(Self.GetInterface.GeoToLocal(Point.GetInterface, OutPoint));
+  OleCheck(Self.GetInterface.GeoToLocal(Point, OutPoint));
   Result := TMapPoint.Create(OutPoint);
 end;
 
@@ -34,7 +34,7 @@ function TMapCoordinateTransformationGeo.LocalToGeo(
 var
   OutPoint: IMapPoint;
 begin
-  OleCheck(Self.GetInterface.LocalToGeo(Point.GetInterface, OutPoint));
+  OleCheck(Self.GetInterface.LocalToGeo(Point, OutPoint));
   Result := TMapPoint.Create(OutPoint);
 end;
 
