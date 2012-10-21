@@ -54,7 +54,7 @@ var
 begin
   DevRect := Self.DeviceRect;
   Result := (Point.X < DevRect.Left) or (Point.X > DevRect.Right)
-    or (Point.X < DevRect.Bottom) or (Point.X > DevRect.Top);
+    or (Point.Y < DevRect.Bottom) or (Point.Y > DevRect.Top);
 end;
 
 function TMapDevice.MapToDevice(Point: TMapPoint): TDevPoint;
