@@ -3,7 +3,8 @@ unit UMapDevice;
 interface
 
 uses
-  UInterfaceWrapper, GrymCore_TLB, Windows, UMapPoint, UDevPoint, UDevRect;
+  UInterfaceWrapper, GrymCore_TLB, Windows, UMapPoint, UDevPoint, UDevRect
+    , UGrymBaseTypes;
 //
 type
   TMapDevice = class(TInterfaceWrapper<IMapDevice>)
@@ -12,6 +13,8 @@ type
     function DeviceRect: TDevRect;
     function MapToDevice(Point: TMapPoint): TDevPoint;
     function DeviceToMap(Point: TDevPoint): TMapPoint;
+    function MapToDeviceMeasure(Length: TGrymMapCoordinate): TGrymDevCoordinate;
+    function DeviceToMapMeasure(Length: TGrymDevCoordinate): TGrymMapCoordinate;
     function Scale: Integer;
 
     function IsOutside(Point: TDevPoint): Boolean;
@@ -39,6 +42,12 @@ begin
   Result := TMapPoint.Create(Pnt);
 end;
 
+function TMapDevice.DeviceToMapMeasure(
+  Length: TGrymDevCoordinate): TGrymMapCoordinate;
+begin
+  OleCheck(Self.GetInterface.DeviceToMapMeasure(Length, Result));
+end;
+
 function TMapDevice.GetDC: HDC;
 var
   DC: OLE_HANDLE;
@@ -63,6 +72,12 @@ var
 begin
   OleCheck(Self.GetInterface.MapToDevice(Point, Pnt));
   Result := TDevPoint.Create(Pnt);
+end;
+
+function TMapDevice.MapToDeviceMeasure(
+  Length: TGrymMapCoordinate): TGrymDevCoordinate;
+begin
+  OleCheck(Self.GetInterface.MapToDeviceMeasure(Length, Result));
 end;
 
 function TMapDevice.Scale: Integer;
