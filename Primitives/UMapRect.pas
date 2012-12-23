@@ -25,6 +25,8 @@ type
     constructor Create(Left, Bottom, Right, Top: TCoordinate); overload;
     constructor Create(Min, Max: TMapPoint); overload;
 
+    function Intersect(Rect: TMapRect): Boolean;
+
     function Get_Min(out pVal: IMapPoint): HResult; stdcall;
     function Get_Max(out pVal: IMapPoint): HResult; stdcall;
     function Get_MinX(out pVal: Double): HResult; stdcall;
@@ -195,6 +197,12 @@ begin
     ShowException(ExceptObject, ExceptAddr);
     Result := S_FALSE;
   end;
+end;
+
+function TMapRect.Intersect(Rect: TMapRect): Boolean;
+begin
+  Result := (Self.Left < Rect.Left) and (Self.Right> Rect.Left)
+    and (Self.Bottom < Rect.Bottom) and (Self.Top > Rect.Bottom)
 end;
 
 function TMapRect.Set_(nMinX, nMinY, nMaxX, nMaxY: Double): HResult;

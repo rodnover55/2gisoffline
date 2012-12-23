@@ -8,15 +8,27 @@ uses
 type
   TLayer = class(TGrymBaseControl, ILayer, IPluginShapeLayer
     , IPluginShapeCursor)
+  protected
     FVisible: Boolean;
     FSymbols: TSymbolCollection;
     FEnumerator: TSymbolCollection.TEnumerator;
+    FScale: Integer;
   public
+    const SCALE_MIN: Integer = 700;
+    const SCALE_HOUSE: Integer = 1132;
+    const SCALE_STREET: Integer = 4871;
+    const SCALE_DISTINCT: Integer = 35443;
+    const SCALE_CITY: Integer = 232322;
+    const SCALE_MAX: Integer = 999999;
+
+    procedure Hide;
+    procedure Show;
     constructor Create(ID: string; Caption: string; Description: string = '');
     destructor Destroy; override;
     procedure Rename(Caption: string);
     function GetSymbols: TSymbolCollection;
     function GetID: string;
+    procedure SetMaxScale(Value: Integer);
   // ILayer
     function Get_VisibleState(out pVal: WordBool): HResult; stdcall;
     function Set_VisibleState(pVal: WordBool): HResult; stdcall;
@@ -63,7 +75,7 @@ function TLayer.CheckVisible(nScale: Integer; nType: DeviceType;
   out pVal: WordBool): HResult;
 begin
   try
-    pVal := True;
+    pVal := (Self.FScale >= nScale);
     Result := S_OK;
   except
     ShowException(ExceptObject, ExceptAddr);
@@ -74,6 +86,7 @@ end;
 constructor TLayer.Create(ID, Caption, Description: string);
 begin
   inherited;
+  Self.FScale := SCALE_MAX;
   Self.FVisible := True;
   Self.FSymbols := TSymbolCollection.Create;
 end;
@@ -221,6 +234,11 @@ begin
   end;
 end;
 
+procedure TLayer.Hide;
+begin
+  Self.FVisible := False;
+end;
+
 function TLayer.Next(const pShape: IShapeFill; out pOk: WordBool): HResult;
 var
   Symbol: TSymbol;
@@ -281,6 +299,11 @@ begin
   Self.FCaption := Caption;
 end;
 
+procedure TLayer.SetMaxScale(Value: Integer);
+begin
+  Self.FScale := Value;
+end;
+
 function TLayer.Set_VisibleState(pVal: WordBool): HResult;
 begin
   try
@@ -290,6 +313,11 @@ begin
     ShowException(ExceptObject, ExceptAddr);
     Result := S_FALSE;
   end;
+end;
+
+procedure TLayer.Show;
+begin
+  Self.FVisible := True;
 end;
 
 end.

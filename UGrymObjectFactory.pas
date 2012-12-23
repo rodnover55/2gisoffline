@@ -4,7 +4,7 @@ interface
 
 uses
   UInterfaceWrapper, GrymCore_TLB, UGrymObjectFactory2, USymbolPoint, Graphics
-    , UMapPoint, UDevPoint;
+    , UMapPoint, UDevPoint, Classes;
 
 type
   TGrymObjectFactory = class(TInterfaceWrapper<IGrymObjectFactory>)
@@ -19,6 +19,8 @@ type
     function CreateSimpleLineSymbol(Style: SimpleLineStyle; Width: Double
       ; Color: TColor): ISimpleLineSymbol;
     function CreateRasterFromFile(FileName: string): IRaster;
+    function CreateRasterFromPicture(Picture: Graphics.TGraphic): IRaster;
+    function CreateRasterFromStream(Stream: TCustomMemoryStream): IRaster;
     function GetRaster(Resource: string): IRaster;
     function CreateDevPoint(X: Integer; Y: Integer): TDevPoint;
     function CreateMapPoint(X: Double; Y: Double): TMapPoint;
@@ -27,7 +29,7 @@ type
 implementation
 
 uses
-  SysUtils, ComObj, ActiveX, Windows, Classes;
+  SysUtils, ComObj, ActiveX, Windows, pngimage;
 
 { TGrymObjectFactory }
 
@@ -50,6 +52,37 @@ end;
 function TGrymObjectFactory.CreateRasterFromFile(FileName: string): IRaster;
 begin
   OleCheck(Self.GetInterface.CreateRasterFromFile(FileName, Result));
+end;
+
+function TGrymObjectFactory.CreateRasterFromPicture(Picture: Graphics.TGraphic): IRaster;
+var
+  Png: TPngImage;
+  Stream: TMemoryStream;
+begin
+  Stream := TMemoryStream.Create;
+
+  try
+    Png := TPngImage.Create;
+    Png.Assign(Picture);
+    Png.SaveToStream(Stream);
+    Result := Self.CreateRasterFromStream(Stream);
+  finally
+    FreeAndNil(Png);
+    FreeAndNil(Stream);
+  end;
+end;
+
+function TGrymObjectFactory.CreateRasterFromStream(
+  Stream: TCustomMemoryStream): IRaster;
+var
+  SA: SAFEARRAY;
+begin
+  ZeroMemory(@sa, sizeof(sa));
+  sa.cDims := 1;
+  sa.cbElements := 1;
+  sa.pvData := Stream.Memory;
+  sa.rgsabound[0].cElements := Stream.Size;
+  OleCheck(Self.GetInterface.CreateRasterFromMemory(@sa, Result));
 end;
 
 function TGrymObjectFactory.CreateRasterMarkerSymbol(Raster: IRaster;
@@ -112,18 +145,11 @@ end;
 
 function TGrymObjectFactory.GetRaster(Resource: string): IRaster;
 var
-  SA: SAFEARRAY;
   RS: TResourceStream;
 begin
   RS := TResourceStream.Create(HInstance, Resource, RT_RCDATA);
   try
-    ZeroMemory(@sa, sizeof(sa));
-    sa.cDims := 1;
-    sa.cbElements := 1;
-    sa.pvData := rs.Memory;
-    sa.rgsabound[0].cElements := rs.Size;
-    OleCheck(Self.GetInterface
-      .CreateRasterFromMemory(@sa, Result));
+    Result := Self.CreateRasterFromStream(RS);
   finally
     FreeAndNil(RS);
   end;

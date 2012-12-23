@@ -23,6 +23,8 @@ type
     City: string;
   [DataField('feature')]
     Feature: IFeature;
+  [DataField('purpose', 512)]
+    Purpose: string;
   end;
 
 implementation

@@ -26,7 +26,7 @@ type
 
     procedure SetPlacement(Value: string);
     function GetPlacement: string;
-    function SetIcon(Raster: IRaster): TGrymBaseControl;
+    function SetIcon(Raster: IRaster): TGrymBaseControl; virtual;
 
     function SetSize(Min: Integer): TGrymBaseControl; overload;
     function SetSize(Min: Integer; Max: Integer): TGrymBaseControl; overload;
@@ -46,6 +46,7 @@ type
     function GetHeightInRow: Integer;
 
     property Caption: string read GetCaption;
+    property ID: string read FID;
   end;
 
 implementation
@@ -68,7 +69,7 @@ end;
 
 function TGrymBaseControl.GetCaption: string;
 begin
-  Result := ' ' + Self.FCaption;
+  Result := Self.FCaption;
 end;
 
 function TGrymBaseControl.GetHeightInRow: Integer;

@@ -3,7 +3,6 @@ unit UGrymComboBox;
 interface
 
 uses
-
   UGrymBaseControl, GrymCore_TLB, UGrymControl, ActiveX, Generics.Collections
     , UBaseController;
 

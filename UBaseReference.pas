@@ -9,6 +9,7 @@ type
   TBaseReference = class(TInterfaceWrapper<IBaseReference>)
   public
     function GetName: string;
+    function IssueDate: TDate;
   end;
 
 implementation
@@ -24,6 +25,14 @@ var
 begin
   OleCheck(Self.GetInterface.Get_Name(Name));
   Result := Name;
+end;
+
+function TBaseReference.IssueDate: TDate;
+var
+  Issue: TDateTime;
+begin
+  OleCheck(Self.GetInterface.Get_IssueDate(Issue));
+  Result := Issue;
 end;
 
 end.

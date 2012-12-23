@@ -30,6 +30,8 @@ type
     FTag: string;
     FLanguages: string;
     FIsRefreshInstance: Boolean;
+    FRestrictedCities: TStringList;
+    FIsRestricted: Boolean;
 
     class var
       FPlugin: TGrymPlugin;
@@ -38,6 +40,20 @@ type
       = '<grym_plugin_info>'
       +   '<name>%s</name>'
       +   '<description>%s</description>'
+      +   '<copyright>%s</copyright>'
+      +   '<tag>%s</tag>'
+      +   '<requirements>'
+{$IFDEF V_2GIS_1_4}
+      +     '<requirement_api>API-1.4</requirement_api>'
+{$ENDIF}
+      +   '</requirements>'
+      +   '<supported_languages>%s</supported_languages>'
+      + '</grym_plugin_info>';
+
+    const PLUGIN_INFO_RESTRICTED: WideString
+      = '<grym_plugin_info>'
+      +   '<name>%s (Не загружен)</name>'
+      +   '<description>Работа плагина в этом городе невозможна. %s</description>'
       +   '<copyright>%s</copyright>'
       +   '<tag>%s</tag>'
       +   '<requirements>'
@@ -87,6 +103,8 @@ type
       Flags: Word; var Params; VarResult, ExcepInfo, ArgErr: Pointer)
       : HResult; stdcall;
 
+    function RestrictCity(Cities: array of string): TGrymPlugin;
+
     property BaseViewThread: TBaseViewThread read FBaseViewThread;
   end;
 
@@ -123,10 +141,12 @@ begin
   end;
 
   Self.pRoot := nil;
+  Self.FRestrictedCities := TStringList.Create;
 end;
 
 destructor TGrymPlugin.Destroy;
 begin
+  FreeAndNil(Self.FRestrictedCities);
   inherited;
 end;
 
@@ -145,6 +165,7 @@ begin
     Application.ModalPopupMode := TPopupMode.pmAuto;
     Self.InnerInitialize(pRoot, pBaseView);
 
+
     OleCheck(Self.BaseViewThread.GetFrame.GetInterface
       .QueryInterface(IConnectionPointContainer, pCont));
 
@@ -161,7 +182,8 @@ begin
 
     try
       Self.RefreshInstance;
-      if Assigned(Self.FRunController) then
+
+      if not Self.FIsRestricted and Assigned(Self.FRunController) then
       begin
         Self.FRunController.Execute;
       end;
@@ -187,6 +209,9 @@ procedure TGrymPlugin.InnerInitialize(const Root: IGrym
 begin
   Self.pRoot := Root;
   Self.fBaseViewThread := TBaseViewThread.Create(BaseView);
+
+  Self.FIsRestricted := (Self.FRestrictedCities.Count > 0) and
+    (Self.FRestrictedCities.IndexOf(Self.BaseViewThread.GetBaseReference.GetName) = -1);
 end;
 
 function TGrymPlugin.Terminate: HResult; stdcall;
@@ -235,7 +260,8 @@ end;
 
 function TGrymPlugin.IsInit: Boolean;
 begin
-  Result := Assigned(Self.pRoot) and Self.fBaseViewThread.IsSet;
+  Result := Self.FIsRestricted and Assigned(Self.pRoot) and
+    Self.fBaseViewThread.IsSet;
 end;
 
 constructor TGrymPlugin.Launch(BaseName: string);
@@ -327,6 +353,21 @@ begin
   begin
     Self.FRefreshController.Execute;
   end;
+end;
+
+function TGrymPlugin.RestrictCity(Cities: array of string): TGrymPlugin;
+var
+  City: string;
+begin
+  Result := Self;
+
+  Self.FRestrictedCities.Clear;
+
+  for City in Cities do
+  begin
+    Self.FRestrictedCities.Add(City);
+  end;
+
 end;
 
 function TGrymPlugin.SetOptionsController(
@@ -426,8 +467,16 @@ begin
   try
     if Assigned(@pData) then
     begin
-      pData  := Format(PLUGIN_INFO, [Self.FName, Self.FDescription
-        , Self.FCopyright, Self.FTag, Self.FLanguages]);
+      if Self.FIsRestricted then
+      begin
+        pData  := Format(PLUGIN_INFO_RESTRICTED, [Self.FName, Self.FDescription
+          , Self.FCopyright, Self.FTag, Self.FLanguages]);
+      end
+      else
+      begin
+        pData  := Format(PLUGIN_INFO, [Self.FName, Self.FDescription
+          , Self.FCopyright, Self.FTag, Self.FLanguages]);
+      end;
       Result := S_OK;
     end
     else

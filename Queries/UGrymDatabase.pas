@@ -3,7 +3,8 @@ unit UGrymDatabase;
 interface
 
 uses
-  UInterfaceWrapper, GrymCore_TLB, UGrymTable, UGrymMapBuilding, UGrymStreet;
+  UInterfaceWrapper, GrymCore_TLB, UGrymTable, UGrymMapBuilding, UGrymStreet
+    , UFeature;
 
 type
   TGrymMapBuildingsTable = TBaseGrymTable<TGrymMapBuilding>;
@@ -20,6 +21,9 @@ type
   public
     function QueryMapBuildingID(City: string; Street: string; Number: string)
       : Integer;
+
+    function QueryMapBuilding(City: string; Street: string; Number: string)
+      : TFeature;
 
     function QueryDistrictName(Feature: IFeature): string;
     function QueryMicroDistrictName(Feature: IFeature): string;
@@ -83,8 +87,7 @@ begin
   end;
 end;
 
-function TGrymDatabase.QueryMapBuildingID(City, Street,
-  Number: string): Integer;
+function TGrymDatabase.QueryMapBuilding(City, Street, Number: string): TFeature;
 var
   Building: IDataRow;
 begin
@@ -99,9 +102,34 @@ begin
   OleCheck(Self.FQueryMapBuilding.AddCriterion('number', Variant(Number)));
   OleCheck(Self.FQueryMapBuilding.Execute);
 
-  Result := -1;
+  Result := nil;
 
   if Self.FQueryMapBuilding.Fetch(Building) = S_OK then
+  begin
+    Result := TFeature.Create(Building as IFeature);
+  end
+end;
+
+function TGrymDatabase.QueryMapBuildingID(City, Street,
+  Number: string): Integer;
+var
+  Building: IDataRow;
+  Feature: TFeature;
+begin
+  Feature := Self.QueryMapBuilding(City, Street, Number);
+
+  try
+    if Assigned(Feature) then
+    begin
+      Building := Feature.GetInterface as IDataRow;
+    end;
+  finally
+    FreeAndNil(Feature);
+  end;
+
+  Result := -1;
+
+  if Assigned(Building) then
   begin
     OleCheck(Building.Get_Index(Result));
   end;
@@ -135,5 +163,7 @@ begin
 end;
 
 end.
+
+
 
 

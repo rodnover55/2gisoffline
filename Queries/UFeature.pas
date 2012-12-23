@@ -9,6 +9,7 @@ type
   TFeature = class(TInterfaceWrapper<IFeature>)
   public
     function CenterPoint: TMapPoint;
+    function GetID: Integer;
   end;
 
 implementation
@@ -23,6 +24,11 @@ var
 begin
   OleCheck(Self.GetInterface.Get_CenterPoint(pMapPoint));
   Result := TMapPoint.Create(pMapPoint);
+end;
+
+function TFeature.GetID: Integer;
+begin
+  OleCheck((Self.GetInterface as IDataRow).Get_Index(Result));
 end;
 
 end.

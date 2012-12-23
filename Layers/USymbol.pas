@@ -3,7 +3,7 @@ unit USymbol;
 interface
 
 uses
-  GrymCore_TLB, Generics.Point, Generics.Collections, Graphics;
+  GrymCore_TLB, Generics.Point, Generics.Collections, Graphics, UMapRect;
 
 type
   TDoublePoint = TPoint<Double>;
@@ -30,7 +30,8 @@ type
     procedure SetLabel(Text: string);
     function GetTextSymbol: ITextSymbol; virtual;
     procedure GetBound(out MinX: Double; out MaxX: Double
-      ; out MinY: Double; out MaxY: Double);
+      ; out MinY: Double; out MaxY: Double); overload;
+    function GetBound: TMapRect; overload;
     procedure AddPoint(X: Double; Y: Double);
     procedure MovePoint(Index: Integer; X: Double; Y: Double);
     procedure RemoveLastPoint;
@@ -87,6 +88,18 @@ begin
       MaxY := Point.Y;
     end;
   end;
+end;
+
+function TSymbol.GetBound: TMapRect;
+var
+  MinX: Double;
+  MaxX: Double;
+  MinY: Double;
+  MaxY: Double;
+begin
+  Self.GetBound(MinX, MaxX, MinY, MaxY);
+
+  Result := TMapRect.Create(MinX, MinY, MaxX, MaxY);
 end;
 
 function TSymbol.GetLabel: string;
