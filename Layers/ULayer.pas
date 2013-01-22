@@ -3,7 +3,7 @@ unit ULayer;
 interface
 
 uses
-  UGrymBaseControl, GrymCore_TLB, USymbolCollection;
+  UGrymBaseControl, GrymCore_TLB, USymbolCollection, UBaseController;
 
 type
   TLayer = class(TGrymBaseControl, ILayer, IPluginShapeLayer
@@ -13,6 +13,7 @@ type
     FSymbols: TSymbolCollection;
     FEnumerator: TSymbolCollection.TEnumerator;
     FScale: Integer;
+    FVisibleController: TBaseController;
   public
     const SCALE_MIN: Integer = 700;
     const SCALE_HOUSE: Integer = 1132;
@@ -29,6 +30,7 @@ type
     function GetSymbols: TSymbolCollection;
     function GetID: string;
     procedure SetMaxScale(Value: Integer);
+    procedure SetVisibleController(Controller: TBaseController);
   // ILayer
     function Get_VisibleState(out pVal: WordBool): HResult; stdcall;
     function Set_VisibleState(pVal: WordBool): HResult; stdcall;
@@ -49,13 +51,15 @@ type
     function Get_MarkerSymbol(out pVal: IMarkerSymbol): HResult; stdcall;
     function Get_LineSymbol(out pVal: ILineSymbol): HResult; stdcall;
     function Get_FillSymbol(out pVal: IFillSymbol): HResult; stdcall;
+
+    property Visible: Boolean read FVisible;
   end;
 
 implementation
 
 uses
   SysUtils, USymbol, Windows, ActiveX, USymbolPoint, USymbolText
-    , Graphics, USymbolLine;
+    , Graphics, USymbolLine, UGrymPlugin;
 
 { TLayer }
 
@@ -237,6 +241,13 @@ end;
 procedure TLayer.Hide;
 begin
   Self.FVisible := False;
+
+  TGrymPlugin.GetInstance.BaseViewThread.GetFrame.GetMap.Invalidate(True);
+
+//  if Assigned(Self.FVisibleController) then
+//  begin
+//    Self.FVisibleController.Execute;
+//  end;
 end;
 
 function TLayer.Next(const pShape: IShapeFill; out pOk: WordBool): HResult;
@@ -304,10 +315,21 @@ begin
   Self.FScale := Value;
 end;
 
+procedure TLayer.SetVisibleController(Controller: TBaseController);
+begin
+  Self.FVisibleController := Controller;
+end;
+
 function TLayer.Set_VisibleState(pVal: WordBool): HResult;
 begin
   try
     Self.FVisible := pVal;
+
+    if Assigned(Self.FVisibleController) then
+    begin
+      Self.FVisibleController.Execute;
+    end;
+
     Result := S_OK;
   except
     ShowException(ExceptObject, ExceptAddr);
@@ -318,6 +340,13 @@ end;
 procedure TLayer.Show;
 begin
   Self.FVisible := True;
+
+  TGrymPlugin.GetInstance.BaseViewThread.GetFrame.GetMap.Invalidate(True);
+//
+//  if Assigned(Self.FVisibleController) then
+//  begin
+//    Self.FVisibleController.Execute;
+//  end;
 end;
 
 end.

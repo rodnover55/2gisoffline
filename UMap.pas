@@ -5,7 +5,7 @@ interface
 uses
   UInterfaceWrapper, GrymCore_TLB, ULayers, UMapTools, UMapPoint, UPopupMenu
     , UDevPoint, UMapCoordinateTransformationGeo, UMapRect, UGrymGraphic
-      , UMapCoordinateTransformationUTM, UMapInfoControllers, UCallout;
+      , UMapCoordinateTransformationUTM, UMapInfoControllers, UCallout, USelection;
 
 type
   TMap = class(TInterfaceWrapper<IMap>)
@@ -26,6 +26,7 @@ type
     function CoordinateTransformationGEO: TMapCoordinateTransformationGeo;
     function CoordinateTransformationUTM: TMapCoordinateTransformationUTM;
     function FullExtend: TMapRect;
+    function GetSelection(bsTag: string; bForceCreate: Boolean = False): TSelection;
 
     function MapInfoControllers: TMapInfoControllers;
   // IDeviceMap
@@ -147,6 +148,14 @@ begin
   end;
 
   Result := Self.FLayers;
+end;
+
+function TMap.GetSelection(bsTag: string; bForceCreate: Boolean): TSelection;
+var
+  Selection: ISelection;
+begin
+  OleCheck(Self.GetInterface.GetSelection(bsTag, bForceCreate, Selection));
+  Result := TSelection.Create(Selection);
 end;
 
 function TMap.GetTools: TMapTools;

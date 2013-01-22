@@ -14,7 +14,6 @@ type
   // TODO: создать TGrymQuery = class(TGrymTable) переместить запросы туда.
     FQueryMapBuilding: IQuery;
     FQuerySpatial: IQuery;
-    FQueryMicroDistrict: IQuery;
     FTableBuildings: TGrymMapBuildingsTable;
     FTableStreets: TGrymStreetsTable;
   protected
@@ -163,7 +162,5 @@ begin
 end;
 
 end.
-
-
 
 

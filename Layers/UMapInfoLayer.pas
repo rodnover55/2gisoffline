@@ -3,7 +3,7 @@ unit UMapInfoLayer;
 interface
 
 uses
-  GrymCore_TLB, UGrymBaseControl, Generics.Collections;
+  GrymCore_TLB, UGrymBaseControl, Generics.Collections, UMapInfoController;
 
 type
   TMapInfoLayer = class(TGrymBaseControl, IMapInfoLayerBlock
@@ -15,22 +15,8 @@ type
     FIDs: TList<Integer>;
     FIsRegistered: Boolean;
 
-    type
-      TEmptyMapInfoController = class(TInterfacedObject, IMapInfoController)
-      // IMapInfoController
-        function Check(const pFeature: IFeature; out pVal: WordBool)
-          : HResult; stdcall;
-        function Get_Title(out pVal: WideString): HResult; stdcall;
-        function Fill(const pFeature: IFeature; const pTab: ICalloutTab)
-          : HResult; stdcall;
-        function OnTabAction(const pTab: ICalloutTab
-          ; const bsActionID: WideString): HResult; stdcall;
-      end;
-    var
-      MapInfoController: TEmptyMapInfoController;
+    FMapInfoController: TMapInfoController;
   public
-//    function SetIcon(Raster: IRaster): TGrymBaseControl; override;
-
     procedure CopyTo(Layer: TMapInfoLayer); overload;
     procedure CopyTo(List: TList<Integer>); overload;
 
@@ -42,6 +28,7 @@ type
     procedure AddByID(ID: Integer; Raster: IRaster); overload;
     procedure RemoveAll;
     constructor Create(ID: string; Caption: string; Description: string = '');
+    procedure SetMapInfoController(MapInfoController: TMapInfoController);
     destructor Destroy; override;
     procedure RegisterLayer;
     procedure UnRegisterLayer;
@@ -139,12 +126,13 @@ function TMapInfoLayer.Get_MapInfoController(
   out pVal: IMapInfoController): HResult;
 begin
   try
-    if not Assigned(Self.MapInfoController) then
+    if not Assigned(Self.FMapInfoController) then
     begin
-      Self.MapInfoController := TEmptyMapInfoController.Create;
+      Self.FMapInfoController := TMapInfoController.Create(Self.FID
+        + '.EmptyController', 'Empty');
     end;
 
-    pVal := Self.MapInfoController;
+    pVal := Self.FMapInfoController as IMapInfoController;
     Result := S_OK;
   except
     ShowException(ExceptObject, ExceptAddr);
@@ -219,19 +207,11 @@ begin
   end;
 end;
 
-//function TMapInfoLayer.SetIcon(Raster: IRaster): TGrymBaseControl;
-//var
-//  pSelf: TMapInfoLayer;
-//begin
-//  inherited;
-//
-//  if Self.FIsRegistered then
-//  begin
-//    Self._AddRef;
-//    Self.UnRegisterLayer;
-//    Self.RegisterLayer;
-//  end;
-//end;
+procedure TMapInfoLayer.SetMapInfoController(
+  MapInfoController: TMapInfoController);
+begin
+  Self.FMapInfoController := MapInfoController;
+end;
 
 function TMapInfoLayer.SetParent(Parent: IInterface): TMapInfoLayer;
 begin
@@ -261,53 +241,6 @@ begin
     .RemoveMapInfoLayer(Self);
   Self.FFiller := nil;
   Self.FIsRegistered := False;
-end;
-
-{ TMapInfoLayer.TEmptyMapInfoController }
-
-function TMapInfoLayer.TEmptyMapInfoController.Check(const pFeature: IFeature;
-  out pVal: WordBool): HResult;
-begin
-  try
-    Result := S_OK;
-    pVal := False;
-  except
-    ShowException(ExceptObject, ExceptAddr);
-    Result := S_FALSE;
-  end;
-end;
-
-function TMapInfoLayer.TEmptyMapInfoController.Fill(const pFeature: IFeature;
-  const pTab: ICalloutTab): HResult;
-begin
-  try
-    Result := E_NOTIMPL;
-  except
-    ShowException(ExceptObject, ExceptAddr);
-    Result := S_FALSE;
-  end;
-end;
-
-function TMapInfoLayer.TEmptyMapInfoController.Get_Title(
-  out pVal: WideString): HResult;
-begin
-  try
-    Result := E_NOTIMPL;
-  except
-    ShowException(ExceptObject, ExceptAddr);
-    Result := S_FALSE;
-  end;
-end;
-
-function TMapInfoLayer.TEmptyMapInfoController.OnTabAction(
-  const pTab: ICalloutTab; const bsActionID: WideString): HResult;
-begin
-  try
-    Result := E_NOTIMPL;
-  except
-    ShowException(ExceptObject, ExceptAddr);
-    Result := S_FALSE;
-  end;
 end;
 
 end.

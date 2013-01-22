@@ -41,7 +41,7 @@ end;
 procedure TLayers.AddMapInfoLayer(Layer: TMapInfoLayer);
 begin
   Self.SetPlacement(Layer);
-  OleCheck(Self.GetMapInfoLayer.Register(Layer));
+  OleCheck(Self.GetMapInfoLayer.Register(Layer as IMapInfoLayerBlock));
 end;
 
 function TLayers.FindLayer(Tag: string): ILayer;
@@ -69,7 +69,7 @@ end;
 
 procedure TLayers.RemoveMapInfoLayer(Layer: TMapInfoLayer);
 begin
-  OleCheck(Self.GetMapInfoLayer.Unregister(Layer));
+  OleCheck(Self.GetMapInfoLayer.Unregister(Layer as IMapInfoLayerBlock));
 end;
 
 procedure TLayers.SetPlacement(Layer: TGrymBaseControl);
