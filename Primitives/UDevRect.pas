@@ -23,6 +23,7 @@ type
     constructor Create(DevRect: IDevRect); overload;
     constructor Create(Left, Bottom, Right, Top: TCoordinate); overload;
     constructor Create(Min, Max: TDevPoint); overload;
+    function IsPointInside(Point: TDevPoint): Boolean;
 
     function Get_Min(out pVal: IDevPoint): HResult; stdcall;
     function Get_Max(out pVal: IDevPoint): HResult; stdcall;
@@ -192,6 +193,12 @@ begin
     ShowException(ExceptObject, ExceptAddr);
     Result := S_FALSE;
   end;
+end;
+
+function TDevRect.IsPointInside(Point: TDevPoint): Boolean;
+begin
+  Result := (Point.X >= Self.Left) and (Point.X <= Self.Right)
+    and (Point.Y >= Self.Bottom) and (Point.Y <= Self.Top);
 end;
 
 function TDevRect.Set_(nMinX, nMinY, nMaxX, nMaxY: Integer): HResult;

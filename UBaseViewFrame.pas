@@ -3,16 +3,20 @@ unit UBaseViewFrame;
 interface
 
 uses
-  UInterfaceWrapper, GrymCore_TLB, URibbonBar, UMap;
+  UInterfaceWrapper, GrymCore_TLB, URibbonBar, UMap, UCustomPageCollection;
 
 type
   TBaseViewFrame = class(TInterfaceWrapper<IBaseViewFrame>)
+  private
     FMainRibbonBar: TRibbonBar;
     FMap: TMap;
+    FCustomPageCollection: TCustomPageCollection;
   public
     destructor Destroy; override;
     function GetMainRibbonBar: TRibbonBar;
     function GetMap: TMap;
+
+    function GetCustomPageCollection: TCustomPageCollection;
   end;
 
 implementation
@@ -26,7 +30,20 @@ destructor TBaseViewFrame.Destroy;
 begin
   FreeAndNil(Self.FMainRibbonBar);
   FreeAndNil(Self.FMap);
+  FreeAndNil(Self.FCustomPageCollection);
   inherited;
+end;
+
+function TBaseViewFrame.GetCustomPageCollection: TCustomPageCollection;
+var
+  pCustomPageCollection: ICustomPageCollection;
+begin
+  if not Assigned(Self.FCustomPageCollection) then
+  begin
+    OleCheck(Self.GetInterface.Get_CustomPageCollection(pCustomPageCollection));
+    Self.FCustomPageCollection := TCustomPageCollection.Create(pCustomPageCollection);
+  end;
+  Result := Self.FCustomPageCollection;
 end;
 
 function TBaseViewFrame.GetMainRibbonBar: TRibbonBar;

@@ -106,6 +106,7 @@ type
     function RestrictCity(Cities: array of string): TGrymPlugin;
 
     property BaseViewThread: TBaseViewThread read FBaseViewThread;
+    property Name: string read FName;
   end;
 
 implementation

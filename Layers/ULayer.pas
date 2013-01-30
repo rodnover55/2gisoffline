@@ -3,7 +3,8 @@ unit ULayer;
 interface
 
 uses
-  UGrymBaseControl, GrymCore_TLB, USymbolCollection, UBaseController;
+  UGrymBaseControl, GrymCore_TLB, USymbolCollection, UBaseController, USymbol
+    , UDevPoint;
 
 type
   TLayer = class(TGrymBaseControl, ILayer, IPluginShapeLayer
@@ -31,6 +32,7 @@ type
     function GetID: string;
     procedure SetMaxScale(Value: Integer);
     procedure SetVisibleController(Controller: TBaseController);
+    function GetIntersectSymbol(Point: TDevPoint): TSymbol;
   // ILayer
     function Get_VisibleState(out pVal: WordBool): HResult; stdcall;
     function Set_VisibleState(pVal: WordBool): HResult; stdcall;
@@ -58,8 +60,8 @@ type
 implementation
 
 uses
-  SysUtils, USymbol, Windows, ActiveX, USymbolPoint, USymbolText
-    , Graphics, USymbolLine, UGrymPlugin;
+  SysUtils, Windows, ActiveX, USymbolPoint, USymbolText, UMapRect
+    , Graphics, USymbolLine, UGrymPlugin, UDevRect;
 
 { TLayer }
 
@@ -104,6 +106,36 @@ end;
 function TLayer.GetID: string;
 begin
   Result := Self.FID;
+end;
+
+function TLayer.GetIntersectSymbol(Point: TDevPoint): TSymbol;
+var
+  Symbol: TSymbol;
+  MapRectSymbol: TMapRect;
+  DevRectSymbol: TDevRect;
+  DevPointMin: TDevPoint;
+  DevPointMax: TDevPoint;
+begin
+  Result := nil;
+  for Symbol in Self.GetSymbols do
+  begin
+    MapRectSymbol := Symbol.GetBound;
+
+    DevPointMin := TGrymPlugin.GetInstance.BaseViewThread.GetFrame.GetMap.MapToDevice(MapRectSymbol.Min);
+    DevPointMax := TGrymPlugin.GetInstance.BaseViewThread.GetFrame.GetMap.MapToDevice(MapRectSymbol.Max);
+
+    DevPointMin.X := DevPointMin.X - 5;
+    DevPointMax.X := DevPointMax.X + 5;
+    DevPointMin.Y := DevPointMin.Y - 5;
+    DevPointMax.Y := DevPointMax.Y + 5;
+
+    DevRectSymbol := TDevRect.Create(DevPointMin, DevPointMax);
+
+    if DevRectSymbol.IsPointInside(Point) then
+    begin
+      Exit(Symbol);
+    end;
+  end;
 end;
 
 function TLayer.GetSymbols: TSymbolCollection;
