@@ -28,7 +28,13 @@ type
     function GetPoints: TDoublePoints;
     function GetLabel: string; virtual;
     procedure SetLabel(Text: string);
+
     function GetTextSymbol: ITextSymbol; virtual;
+    function GetMarkerSymbol: IRasterMarkerSymbol; virtual;
+    function GetLineSymbol: ILineSymbol; virtual;
+    function GetFillSymbol: IFillSymbol; virtual;
+
+
     procedure GetBound(out MinX: Double; out MaxX: Double
       ; out MinY: Double; out MaxY: Double); overload;
     function GetBound: TMapRect; overload;
@@ -102,9 +108,24 @@ begin
   Result := TMapRect.Create(MinX, MinY, MaxX, MaxY);
 end;
 
+function TSymbol.GetFillSymbol: IFillSymbol;
+begin
+  Result := nil;
+end;
+
 function TSymbol.GetLabel: string;
 begin
   Result := Self.FText;
+end;
+
+function TSymbol.GetLineSymbol: ILineSymbol;
+begin
+  Result := nil;
+end;
+
+function TSymbol.GetMarkerSymbol: IRasterMarkerSymbol;
+begin
+  Result := nil;
 end;
 
 class function TSymbol.GetNextIndex: Integer;

@@ -18,6 +18,11 @@ type
     function CreateTextSymbol(Font: TFont): ITextSymbol;
     function CreateSimpleLineSymbol(Style: SimpleLineStyle; Width: Double
       ; Color: TColor): ISimpleLineSymbol;
+    function CreateSimpleFillSymbol(Style: SimpleFillStyle; Foreground: TColor
+      ; Background: TColor; const Border: ILineSymbol): ISimpleFillSymbol;
+
+    function CreateShape: IShapeFill;
+
     function CreateRasterFromFile(FileName: string): IRaster;
     function CreateRasterFromPicture(Picture: Graphics.TGraphic): IRaster;
     function CreateRasterFromStream(Stream: TCustomMemoryStream): IRaster;
@@ -89,6 +94,18 @@ function TGrymObjectFactory.CreateRasterMarkerSymbol(Raster: IRaster;
   Scale: Double): IRasterMarkerSymbol;
 begin
   OleCheck(Self.GetInterface.CreateRasterMarkerSymbol(Raster, Scale, Result));
+end;
+
+function TGrymObjectFactory.CreateShape: IShapeFill;
+begin
+  OleCheck((Self.GetInterface as IGrymObjectFactory2).CreateShape(Result));
+end;
+
+function TGrymObjectFactory.CreateSimpleFillSymbol(Style: SimpleFillStyle;
+  Foreground, Background: TColor; const Border: ILineSymbol): ISimpleFillSymbol;
+begin
+  OleCheck(Self.GetInterface.CreateSimpleFillSymbol(Style, Foreground
+    , Background, Border, Result));
 end;
 
 function TGrymObjectFactory.CreateSimpleLineSymbol(Style: SimpleLineStyle;

@@ -25,7 +25,7 @@ end;
 
 constructor TInterfaceWrapper<I>.Create;
 begin
-  Self.PInterface := nil;
+  Self.Create(nil);
 end;
 
 destructor TInterfaceWrapper<I>.Destroy;

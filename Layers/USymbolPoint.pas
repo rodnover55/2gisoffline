@@ -12,7 +12,7 @@ type
   public
     constructor Create(StartX: Double; StartY: Double; Raster: IRaster = nil);
     function GetDimension: ComponentDimension; override;
-    function GetMarkerSymbol: IRasterMarkerSymbol; virtual;
+    function GetMarkerSymbol: IRasterMarkerSymbol; override;
   end;
 
 implementation

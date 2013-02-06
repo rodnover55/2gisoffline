@@ -4,11 +4,13 @@ interface
 
 uses
   UInterfaceWrapper, GrymCore_TLB, UGrymTable, UGrymMapBuilding, UGrymStreet
-    , UFeature;
+    , UFeature, Generics.Collections;
 
 type
   TGrymMapBuildingsTable = TBaseGrymTable<TGrymMapBuilding>;
   TGrymStreetsTable = TBaseGrymTable<TGrymStreet>;
+  TFeatureList = TList<TFeature>;
+  TFeatureObjectList = TObjectList<TFeature>;
   TGrymDatabase = class(TInterfaceWrapper<IDatabase>)
   private
   // TODO: создать TGrymQuery = class(TGrymTable) переместить запросы туда.
@@ -18,6 +20,8 @@ type
     FTableStreets: TGrymStreetsTable;
   protected
   public
+    constructor Create; overload;
+    constructor Create(P: IDatabase); overload;
     function QueryMapBuildingID(City: string; Street: string; Number: string)
       : Integer;
 
@@ -26,6 +30,8 @@ type
 
     function QueryDistrictName(Feature: IFeature): string;
     function QueryMicroDistrictName(Feature: IFeature): string;
+
+    function QuerySpatial(Layer: ILayer; Shape: IShapeFill): TFeatureObjectList;
 
     function GetTableBuildings: TGrymMapBuildingsTable;
     function GetTableStreets: TGrymStreetsTable;
@@ -38,6 +44,17 @@ uses
 
 { TGrymDatabase }
 
+
+constructor TGrymDatabase.Create;
+begin
+  Self.Create(nil);
+end;
+
+constructor TGrymDatabase.Create(P: IDatabase);
+begin
+  inherited;
+  OleCheck(Self.GetInterface.CreateQuery('spatial', Self.FQuerySpatial));
+end;
 
 function TGrymDatabase.GetTableBuildings: TGrymMapBuildingsTable;
 begin
@@ -65,11 +82,6 @@ var
   District: IDataRow;
   Data: OleVariant;
 begin
-  if not Assigned(Self.FQuerySpatial) then
-  begin
-    OleCheck(Self.GetInterface.CreateQuery('spatial', Self.FQuerySpatial));
-  end;
-
   Layer := TGrymPlugin.GetInstance.BaseViewThread.GetFrame.GetMap.GetLayers
     .FindLayer('Grym_Map_UMLRADM0');
 
@@ -140,11 +152,6 @@ var
   District: IDataRow;
   Data: OleVariant;
 begin
-  if not Assigned(Self.FQuerySpatial) then
-  begin
-    OleCheck(Self.GetInterface.CreateQuery('spatial', Self.FQuerySpatial));
-  end;
-
   Layer := TGrymPlugin.GetInstance.BaseViewThread.GetFrame.GetMap.GetLayers
     .FindLayer('Grym_Map_UMLRLREG');
 
@@ -161,8 +168,31 @@ begin
   end;
 end;
 
+function TGrymDatabase.QuerySpatial(Layer: ILayer;
+  Shape: IShapeFill): TFeatureObjectList;
+var
+  List: TFeatureObjectList;
+  DataRow: IDataRow;
+begin
+  Result := nil;
+
+  OleCheck(Self.FQuerySpatial.AddCriterion('layer', OLEVariant(Layer)));
+  OleCheck(Self.FQuerySpatial.AddCriterion('filter', OLEVariant(Shape)));
+  OleCheck(Self.FQuerySpatial.Execute);
+
+  List := TFeatureObjectList.Create;
+
+  try
+    while Self.FQuerySpatial.Fetch(DataRow) = S_OK do
+    begin
+      List.Add(TFeature.Create(DataRow as IFeature));
+    end;
+    Result := List;
+  except
+    FreeAndNil(List);
+    raise;
+  end;
+end;
+
 end.
-
-
-
 

@@ -146,6 +146,13 @@ end;
 function TLayer.Get_FillSymbol(out pVal: IFillSymbol): HResult;
 begin
   try
+    pVal := Self.FEnumerator.Current.GetFillSymbol;
+
+    if not Assigned(pVal) then
+    begin
+      Exit(E_INVALIDARG);
+    end;
+
     Result := S_OK;
   except
     ShowException(ExceptObject, ExceptAddr);
@@ -177,12 +184,13 @@ end;
 function TLayer.Get_LineSymbol(out pVal: ILineSymbol): HResult;
 begin
   try
-    if not Self.FEnumerator.Current.GetDimension = ComponentDimensionLine then
+    pVal := Self.FEnumerator.Current.GetLineSymbol;
+
+    if not Assigned(pVal) then
     begin
       Exit(E_INVALIDARG);
     end;
 
-    pVal := (Self.FEnumerator.Current as TSymbolLine).GetLineSymbol;
     Result := S_OK;
   except
     ShowException(ExceptObject, ExceptAddr);
@@ -193,12 +201,13 @@ end;
 function TLayer.Get_MarkerSymbol(out pVal: IMarkerSymbol): HResult;
 begin
   try
-    if not Self.FEnumerator.Current.GetDimension = ComponentDimensionPoint then
+    pVal := Self.FEnumerator.Current.GetMarkerSymbol;
+
+    if not Assigned(pVal) then
     begin
       Exit(E_INVALIDARG);
     end;
 
-    pVal := (Self.FEnumerator.Current as TSymbolPoint).GetMarkerSymbol;
     Result := S_OK;
   except
     ShowException(ExceptObject, ExceptAddr);

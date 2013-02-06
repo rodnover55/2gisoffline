@@ -9,18 +9,18 @@ uses
 type
   TSymbolLine = class(TSymbol)
   private
-    ListPoints: TObjectList<TSymbol>;
+    FpLineSymbol: ILineSymbol;
   protected
+    ListPoints: TObjectList<TSymbol>;
     FStyle: SimpleLineStyle;
     FWidth: Double;
     FColor: TColor;
-    FpLineSymbol: ILineSymbol;
   public
     constructor Create(StartX: Double; StartY: Double; Style: SimpleLineStyle
       ; Width: Double; Color: TColor);
     destructor Destroy; override;
     function GetDimension: ComponentDimension; override;
-    function GetLineSymbol: ILineSymbol; virtual;
+    function GetLineSymbol: ILineSymbol; override;
     procedure ShapeFill(const pShape: IShapeFill); override;
 
     function GetStyle: SimpleLineStyle;

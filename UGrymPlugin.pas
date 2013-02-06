@@ -105,6 +105,8 @@ type
 
     function RestrictCity(Cities: array of string): TGrymPlugin;
 
+    function InstallPath: string;
+
     property BaseViewThread: TBaseViewThread read FBaseViewThread;
     property Name: string read FName;
   end;
@@ -261,7 +263,7 @@ end;
 
 function TGrymPlugin.IsInit: Boolean;
 begin
-  Result := Self.FIsRestricted and Assigned(Self.pRoot) and
+  Result := not Self.FIsRestricted and Assigned(Self.pRoot) and
     Self.fBaseViewThread.IsSet;
 end;
 
@@ -303,6 +305,15 @@ begin
     ShowException(ExceptObject, ExceptAddr);
     Result := S_OK;
   end;
+end;
+
+function TGrymPlugin.InstallPath: string;
+var
+  TheFileName : array[0..MAX_PATH] of Char;
+begin
+  FillChar(TheFileName, sizeof(TheFileName), #0);
+  GetModuleFileName(HInstance, TheFileName, sizeof(TheFileName));
+  Result := ExtractFilePath(TheFileName);
 end;
 
 function TGrymPlugin.QueryInterface(const IID: TGUID; out Obj): HResult;

@@ -23,6 +23,7 @@ type
     procedure RemoveMapInfoLayer(Layer: TMapInfoLayer);
 
     function FindLayer(Tag: string): ILayer;
+    function GetBuildings: ILayer;
   end;
 
 implementation
@@ -49,13 +50,18 @@ begin
   OleCheck(Self.GetInterface.FindLayer(Tag, Result));
 end;
 
+function TLayers.GetBuildings: ILayer;
+begin
+  Result := Self.FindLayer('Grym_Map_UMLRHOUS');
+end;
+
 function TLayers.GetMapInfoLayer: IMapInfoLayer;
 var
   GrymLayer: ILayer;
 begin
   if not Assigned(Self.FMapInfoLayer) then
   begin
-    GrymLayer := Self.FindLayer('Grym_Map_UMLRHOUS');
+    GrymLayer := Self.GetBuildings;
     OleCheck(Self.GetInterface.Get_MapInfoLayer(GrymLayer as IGrymLayer
       , Self.FMapInfoLayer));
   end;
