@@ -12,6 +12,7 @@ type
     FController: TBaseController;
     FAvailableController: TBaseBooleanController;
     FEnabled: Boolean;
+    FCaptionBelow: Boolean;
   public
     constructor Create(ID: string; Caption: string; Description: string = '');
     destructor Destroy; override;
@@ -24,6 +25,7 @@ type
     function GetChecked: Boolean; virtual;
     function GetEnabled: Boolean; virtual;
     function SetEnabled(Value: Boolean): Boolean; virtual;
+    property CaptionBelow: Boolean read FCaptionBelow write FCaptionBelow;
   // ICommandAction
     function OnCommand: HResult; stdcall;
   // ICommandState
@@ -48,6 +50,7 @@ begin
   Self.FController := nil;
   Self.FAvailableController := nil;
   Self.FEnabled := True;
+  Self.FCaptionBelow := False;
 end;
 
 destructor TGrymControlButton.Destroy;
@@ -115,7 +118,14 @@ begin
     begin
       if Assigned(Self.FRaster) and (Self.FCaption <> EmptyStr) then
       begin
-        pVal := GrymControlStyleIconAndCaption;
+        if Self.FCaptionBelow then
+        begin
+          pVal := GrymControlStyleIconAndCaptionBelow;
+        end
+        else
+        begin
+          pVal := GrymControlStyleIconAndCaption;
+        end;
       end
       else if Self.FCaption <> EmptyStr then
       begin

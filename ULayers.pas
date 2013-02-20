@@ -13,9 +13,10 @@ type
 
     class var MaxIDPlacement: Integer;
 
-    function GetMapInfoLayer: IMapInfoLayer;
     procedure SetPlacement(Layer: TGrymBaseControl);
   public
+    function GetMapInfoLayer: IMapInfoLayer;
+
     procedure AddLayer(Layer: TLayer);
     procedure RemoveLayer(Layer: TLayer);
 

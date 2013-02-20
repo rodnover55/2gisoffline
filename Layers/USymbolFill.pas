@@ -17,6 +17,7 @@ type
       ; Width: Double; Color: TColor; Foreground: TColor); overload;
     constructor Create(StartX: Double; StartY: Double; Style: SimpleLineStyle
       ; Width: Double; Color: TColor); overload;
+    constructor Create(Symbol: TSymbolLine; Foreground: TColor); overload;
 
     function GetDimension: ComponentDimension; override;
 
@@ -43,7 +44,26 @@ constructor TSymbolFill.Create(StartX, StartY: Double; Style: SimpleFillStyle;
 begin
   inherited Create(StartX, StartY, SimpleLineStyleSolid, Width, Color);
 
+
   Self.FFillStyle := Style;
+  Self.FForeground := Foreground;
+  Self.FBackground := Foreground;
+end;
+
+constructor TSymbolFill.Create(Symbol: TSymbolLine; Foreground: TColor);
+var
+  I: Integer;
+begin
+  inherited Create(Symbol.GetPoints[0].X, Symbol.GetPoints[0].Y
+    , SimpleLineStyleSolid, Symbol.GetWidth, Symbol.GetColor);
+
+
+  for I := 1 to Symbol.GetPoints.Count - 1 do
+  begin
+    Self.AddPoint(Symbol.GetPoints[I].X, Symbol.GetPoints[I].Y);
+  end;
+
+  Self.FFillStyle := Symbol.GetStyle;
   Self.FForeground := Foreground;
   Self.FBackground := Foreground;
 end;

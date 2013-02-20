@@ -108,10 +108,20 @@ begin
       , Self.FQueryMapBuilding));
   end;
 
-  OleCheck(Self.FQueryMapBuilding.AddCriterion('city', Variant(City)));
-  OleCheck(Self.FQueryMapBuilding.AddCriterion('street', Variant(Street)));
-  OleCheck(Self.FQueryMapBuilding.AddCriterion('number', Variant(Number)));
-  OleCheck(Self.FQueryMapBuilding.Execute);
+  try
+  // Исправляем ошибку 2гис, если загнать пустой параметр вылезает сообщение об ошибке
+    if City = EmptyStr then
+    begin
+      City := TGrymPlugin.GetInstance.BaseViewThread.GetBaseReference.GetName;
+    end;
+
+    OleCheck(Self.FQueryMapBuilding.AddCriterion('city', Variant(City)));
+    OleCheck(Self.FQueryMapBuilding.AddCriterion('street', Variant(Street)));
+    OleCheck(Self.FQueryMapBuilding.AddCriterion('number', Variant(Number)));
+    OleCheck(Self.FQueryMapBuilding.Execute);
+  except
+    Exit(nil);
+  end;
 
   Result := nil;
 
@@ -174,8 +184,6 @@ var
   List: TFeatureObjectList;
   DataRow: IDataRow;
 begin
-  Result := nil;
-
   OleCheck(Self.FQuerySpatial.AddCriterion('layer', OLEVariant(Layer)));
   OleCheck(Self.FQuerySpatial.AddCriterion('filter', OLEVariant(Shape)));
   OleCheck(Self.FQuerySpatial.Execute);
@@ -195,4 +203,5 @@ begin
 end;
 
 end.
+
 

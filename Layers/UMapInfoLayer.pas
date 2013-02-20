@@ -18,7 +18,7 @@ type
     FMapInfoController: TMapInfoController;
   public
     procedure CopyTo(Layer: TMapInfoLayer); overload;
-    procedure CopyTo(List: TList<Integer>); overload;
+    procedure CopyTo(List: TList<Integer>; Clear: Boolean = True); overload;
 
     procedure CopyFrom(List: TList<Integer>); overload;
     procedure Hide;
@@ -89,9 +89,12 @@ begin
   end;
 end;
 
-procedure TMapInfoLayer.CopyTo(List: TList<Integer>);
+procedure TMapInfoLayer.CopyTo(List: TList<Integer>; Clear: Boolean = True);
 begin
-  List.Clear;
+  if Clear then
+  begin
+    List.Clear;
+  end;
   List.AddRange(Self.FIDs);
 end;
 

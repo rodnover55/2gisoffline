@@ -19,6 +19,8 @@ type
   public
     procedure SetHTML;
     function GetComputedHTML: string;
+    procedure SetTitleIcon(const Image: IRaster);
+
 
     property HTML: string read GetHTML;
     property Body: string read GetBody write SetBody;
@@ -87,6 +89,11 @@ end;
 procedure TCalloutTab.SetStyles(const Value: string);
 begin
   Self.FStyle := Value;
+end;
+
+procedure TCalloutTab.SetTitleIcon(const Image: IRaster);
+begin
+  OleCheck(Self.GetInterface._Set_TitleIcon(Image));
 end;
 
 end.

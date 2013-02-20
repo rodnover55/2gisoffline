@@ -7,7 +7,7 @@ uses
 
 type
   TBaseActivateToolController<T: TGrymBaseTool> = class(TBaseController)
-  private
+  protected
     FTool: T;
   public
     constructor Create(Tool: T);
