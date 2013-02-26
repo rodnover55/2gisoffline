@@ -5,7 +5,8 @@ interface
 uses
   UInterfaceWrapper, GrymCore_TLB, ULayers, UMapTools, UMapPoint, UPopupMenu
     , UDevPoint, UMapCoordinateTransformationGeo, UMapRect, UGrymGraphic
-      , UMapCoordinateTransformationUTM, UMapInfoControllers, UCallout, USelection;
+    , UMapCoordinateTransformationUTM, UMapInfoControllers, UCallout, USelection
+    , UFeature;
 
 type
   TMap = class(TInterfaceWrapper<IMap>)
@@ -39,6 +40,8 @@ type
     function CreateCallout(Point: TMapPoint; AutoClose: Boolean = True
       ; Vector: TDevPoint = nil; pSize: IDevSize = nil): TCallout;
     function GraphicByTag(Tag: string): IGraphicBase;
+  // IMap2
+    function CreateInfoCard(Feature: TFeature): TCallout;
   end;
 
 implementation
@@ -108,6 +111,15 @@ begin
   OleCheck((Self.GetInterface as IMapGraphics).CreateCallout(Point, AutoClose
     , Vector, pSize, Callout));
 
+  Result := TCallout.Create(Callout);
+end;
+
+function TMap.CreateInfoCard(Feature: TFeature): TCallout;
+var
+  Callout: ICallout;
+begin
+  OleCheck((Self.GetInterface as IMap2).CreateInfoCard(Feature.GetInterface
+    , Callout));
   Result := TCallout.Create(Callout);
 end;
 

@@ -5,7 +5,7 @@ interface
 uses
   Windows, ActiveX, Classes, GrymCore_TLB, Dialogs, SysUtils, UBaseController
     , Generics.Collections, UGrymControlsManager, UBaseViewFrame
-    , UBaseViewThread;
+    , UBaseViewThread, UGrym;
 
 {$IFNDEF V_2GIS_1_4}
 {$DEFINE V_2GIS_1_4}
@@ -14,7 +14,7 @@ type
   TGrymPlugin = class(TInterfacedObject, IGrymPlugin, IGrymPluginInfo
     , IGrymPluginOptions, IDispatch, IUnknown)
   private
-    pRoot: IGrym;
+    pRoot: TGrym;
     fBaseViewThread: TBaseViewThread;
 
     FRunController: TBaseController;
@@ -108,6 +108,7 @@ type
     function InstallPath: string;
 
     property BaseViewThread: TBaseViewThread read FBaseViewThread;
+    property Root: TGrym read pRoot;
     property Name: string read FName;
   end;
 
@@ -210,7 +211,7 @@ end;
 procedure TGrymPlugin.InnerInitialize(const Root: IGrym
   ; const BaseView: IBaseViewThread);
 begin
-  Self.pRoot := Root;
+  Self.pRoot := TGrym.Create(Root);
   Self.fBaseViewThread := TBaseViewThread.Create(BaseView);
 
   Self.FIsRestricted := (Self.FRestrictedCities.Count > 0) and

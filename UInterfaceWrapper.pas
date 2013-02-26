@@ -3,7 +3,7 @@ unit UInterfaceWrapper;
 interface
 
 type
-  TInterfaceWrapper<I: IUnknown> = class
+  TInterfaceWrapper<I: IUnknown> = class(TInterfacedObject)
     PInterface: I;
   public
     constructor Create(P: I); overload;

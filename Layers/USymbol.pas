@@ -181,7 +181,7 @@ var
   Point: TDoublePoint;
 begin
   pShape.SetOID(Self.FIndex);
-  pShape.AddComponent(Self.GetDimension, Null);
+  pShape.AddComponent(Self.GetDimension, EmptyParam);
 
   for Point in Self.GetPoints do
   begin

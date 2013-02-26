@@ -55,13 +55,19 @@ uses
 
 procedure TMapInfoLayer.AddByID(ID: Integer);
 begin
-  Self.FIDs.Add(ID);
+  if not Self.FIDs.Contains(ID) then
+  begin
+    Self.FIDs.Add(ID);
+  end;
   OleCheck(Self.FFiller.AddByID(ID));
 end;
 
 procedure TMapInfoLayer.AddByID(ID: Integer; Raster: IRaster);
 begin
-  Self.FIDs.Add(ID);
+  if not Self.FIDs.Contains(ID) then
+  begin
+    Self.FIDs.Add(ID);
+  end;
   OleCheck((Self.FFiller as IMapInfoLayerFiller2).AddByID2(ID, Raster));
 end;
 
