@@ -23,6 +23,7 @@ type
 
     function GetRecordCount: Integer; override;
     function GetRecNo: Integer; override;
+    procedure SetRecNo(Value: Integer); override;
 
     function GetTypeField(Tp: TRttiType): TFieldType;
   public
@@ -344,6 +345,11 @@ begin
   OleCheck(TGrymPlugin.GetInstance.BaseViewThread.GetDatabase
     .GetInterface.Get_Table(Name, Self.FTable));
   Self.Open;
+end;
+
+procedure TBaseGrymTable<T>.SetRecNo(Value: Integer);
+begin
+  Self.FIdRow := Value;
 end;
 
 end.

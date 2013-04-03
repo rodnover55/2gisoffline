@@ -4,10 +4,9 @@ interface
 
 uses
   UInterfaceWrapper, GrymCore_TLB, UGrymTable, UGrymMapBuilding, UGrymStreet
-    , UFeature, Generics.Collections;
+    , UFeature, Generics.Collections, UGrymMapBuildingsTable;
 
 type
-  TGrymMapBuildingsTable = TBaseGrymTable<TGrymMapBuilding>;
   TGrymStreetsTable = TBaseGrymTable<TGrymStreet>;
   TFeatureList = TList<TFeature>;
   TFeatureObjectList = TObjectList<TFeature>;

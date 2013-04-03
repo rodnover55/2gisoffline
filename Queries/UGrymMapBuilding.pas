@@ -49,10 +49,6 @@ var
   FieldRecord: Variant;
   oObj: TObject;
   pObj: Pointer;
-  Intf: Pointer;
-  Intf2: Pointer;
-  pInterface: IInterface;
-  L: ILayer;
 begin
   ctx := TRttiContext.Create;
 

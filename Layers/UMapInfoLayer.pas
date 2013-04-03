@@ -8,15 +8,18 @@ uses
 type
   TMapInfoLayer = class(TGrymBaseControl, IMapInfoLayerBlock
     , IMapInfoLayerBlockProp, IChildControl)
+  public
+    type FeaturesList = TList<Integer>;
   private
     FVisible: Boolean;
     FFiller: IMapInfoLayerFiller;
     FParent: IUnknown;
-    FIDs: TList<Integer>;
+    FIDs: FeaturesList;
     FIsRegistered: Boolean;
 
     FMapInfoController: TMapInfoController;
   public
+
     procedure CopyTo(Layer: TMapInfoLayer); overload;
     procedure CopyTo(List: TList<Integer>; Clear: Boolean = True); overload;
 
@@ -44,6 +47,7 @@ type
     function Get_ParentControl(out pVal: IUnknown): HResult; stdcall;
 
     property Visible: Boolean read FVisible write FVisible;
+    property Features: FeaturesList read FIDs;
   end;
 
 implementation

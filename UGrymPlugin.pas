@@ -25,6 +25,7 @@ type
     FCookie: Integer;
 
     FName: string;
+    FOrganization: string;
     FDescription: string;
     FCopyright: string;
     FTag: string;
@@ -67,7 +68,9 @@ type
     procedure RefreshInstance;
   public
     constructor Create(Tag: string; Name: string; Languages: array of string
-      ; Description: string = ''; Copyright: string = '');
+      ; Description: string = ''; Copyright: string = ''); overload;
+    constructor Create(Organization: string; Tag: string; Name: string; Languages: array of string
+      ; Description: string = ''; Copyright: string = ''); overload;
 
     constructor Launch(BaseName: string);
     procedure FillRibbon(Manager: TGrymControlsManager);
@@ -106,6 +109,8 @@ type
     function RestrictCity(Cities: array of string): TGrymPlugin;
 
     function InstallPath: string;
+
+    function GetID(ID: string; Group: string = ''): string;
 
     property BaseViewThread: TBaseViewThread read FBaseViewThread;
     property Root: TGrym read pRoot;
@@ -146,6 +151,13 @@ begin
 
   Self.pRoot := nil;
   Self.FRestrictedCities := TStringList.Create;
+end;
+
+constructor TGrymPlugin.Create(Organization, Tag, Name: string;
+  Languages: array of string; Description, Copyright: string);
+begin
+  Self.Create(Tag, Name, Languages, Description, Copyright);
+  Self.FOrganization := Organization;
 end;
 
 destructor TGrymPlugin.Destroy;
@@ -276,6 +288,9 @@ var
   pBaseReference: IBaseReference;
 begin
   inherited Create;
+
+  Self.pRoot := nil;
+  Self.FRestrictedCities := TStringList.Create;
 
   CoInitialize(nil);
 
@@ -410,6 +425,32 @@ begin
   Self.pRoot := nil;
 end;
 
+
+function TGrymPlugin.GetID(ID: string; Group: string): string;
+var
+  Str: TStringBuilder;
+begin
+  Str := TStringBuilder.Create;
+
+  try
+    if Self.FOrganization <> EmptyStr then
+    begin
+      Str.Append(Self.FOrganization).Append('.');
+    end;
+
+    Str.Append(Self.FTag).Append('.');
+
+    if Group <> EmptyStr then
+    begin
+      Str.Append(Group).Append('.');
+    end;
+
+    Str.Append(ID);
+    Result := Str.ToString;
+  finally
+    FreeAndNil(Str);
+  end;
+end;
 
 function TGrymPlugin.GetIDsOfNames(const IID: TGUID; Names: Pointer; NameCount,
   LocaleID: Integer; DispIDs: Pointer): HResult;

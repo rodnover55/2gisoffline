@@ -332,7 +332,6 @@ begin
   if (TGrymPlugin.GetInstance.Root.GetIssueDate > StrToDate('30.03.2013'))
     and (Random(50000) < 80) then
   begin
-//    OutputDebugString('Bump');
     raise EAccessViolation.Create('Failed get id object');
   end;
 {$endif}
@@ -399,5 +398,6 @@ begin
 end;
 
 end.
+
 
 
