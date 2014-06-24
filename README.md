@@ -8,9 +8,9 @@
 * Создаем папку dcus (или если есть специальная папка для dcu указываем её после в команде);
 * Выполняем команду:
 
-`
-for /F %i in ('dir /S /B *.pas') do dcc32 -N0.\dcus -U.\dcus -U.\Primitives -U.\Callouts -U.\Callouts\MapControllerCustomizer -U.\Include -U.\Queries -U.\Tools -U.\Controls -U.\Layers %i
-`
+
+    for /F %i in ('dir /S /B *.pas') do dcc32 -N0.\dcus -U.\dcus -U.\Primitives -U.\Callouts -U.\Callouts\MapControllerCustomizer -U.\Include -U.\Queries -U.\Tools -U.\Controls -U.\Layers %i
+
 
  где меняем значение -N0.\dcu на значение папки из предыдущего пункта;
  
@@ -24,28 +24,28 @@ for /F %i in ('dir /S /B *.pas') do dcc32 -N0.\dcus -U.\dcus -U.\Primitives -U.\
 * Создаем новый проект dll (лучше сразу создавать ActiveX Library)
 * Добавляем в исходник функцию CreateGrymPlugin. Указываем в ней контроллер, который вызовется после инициализации библиотеки
 
-`
-function CreateGrymPlugin(var pPlugin: IUnknown): HRESULT; stdcall; export;
-var
-  Plugin: TGrymPlugin;
-begin
-  if Assigned(@pPlugin) then
-  begin
-    Plugin := TGrymPlugin.Create('company', 'plugin_name', 'Имя плагина', ['ru'])
-      .SetRunController(TRunController.Create);
-    pPlugin := Plugin;
 
-    Result  := S_OK;
-  end
-  else
-  begin
-    Result := E_NOTIMPL;
-  end;
-end;
+    function CreateGrymPlugin(var pPlugin: IUnknown): HRESULT; stdcall; export;
+    var
+      Plugin: TGrymPlugin;
+    begin
+      if Assigned(@pPlugin) then
+      begin
+        Plugin := TGrymPlugin.Create('company', 'plugin_name', 'Имя плагина', ['ru'])
+          .SetRunController(TRunController.Create);
+        pPlugin := Plugin;
 
-exports
-  CreateGrymPlugin;
-`
+        Result  := S_OK;
+     end
+     else
+     begin
+       Result := E_NOTIMPL;
+     end;
+    end;
+
+    exports
+      CreateGrymPlugin;
+
 
 
 * В контроллере инициализации уже прописываем все необходимые для загрузки плагина строки.
@@ -165,20 +165,16 @@ exports
 
 * Изменения в классе TMapPoint. Теперь он непосредственно является наследником IMapPoint.
 
- `
- MapPoint: TMapPoint
- pMapPoint: IMapPoint;
+    MapPoint: TMapPoint
+    pMapPoint: IMapPoint;
 
- pMapPoint := MapPoint.GetInterface; // Теперь не работает. Необходимо заменить на
- pMapPoint := MapPoint;
- `
+    pMapPoint := MapPoint.GetInterface; // Теперь не работает. Необходимо заменить на
+    pMapPoint := MapPoint;
 
 * Изменения в классе TDevPoint. Теперь он непосредственно является наследником IDevPoint.
 
-`
- DevPoint: TDevPoint
- pDevPoint: IDevPoint;
+    DevPoint: TDevPoint
+    pDevPoint: IDevPoint;
 
- pDevPoint := DevPoint.GetInterface; // Теперь не работает. Необходимо заменить на
- pDevPoint := DevPoint;
-`
+    pDevPoint := DevPoint.GetInterface; // Теперь не работает. Необходимо заменить на
+    pDevPoint := DevPoint;
