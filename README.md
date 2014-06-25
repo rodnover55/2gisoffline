@@ -8,9 +8,9 @@
 * Создаем папку dcus (или если есть специальная папка для dcu указываем её после в команде);
 * Выполняем команду:
 
-
+    ```
     for /F %i in ('dir /S /B *.pas') do dcc32 -N0.\dcus -U.\dcus -U.\Primitives -U.\Callouts -U.\Callouts\MapControllerCustomizer -U.\Include -U.\Queries -U.\Tools -U.\Controls -U.\Layers %i
-
+    ```
 
  где меняем значение -N0.\dcu на значение папки из предыдущего пункта;
  
@@ -24,7 +24,7 @@
 * Создаем новый проект dll (лучше сразу создавать ActiveX Library)
 * Добавляем в исходник функцию CreateGrymPlugin. Указываем в ней контроллер, который вызовется после инициализации библиотеки
 
-
+    ```
     function CreateGrymPlugin(var pPlugin: IUnknown): HRESULT; stdcall; export;
     var
       Plugin: TGrymPlugin;
@@ -34,7 +34,7 @@
         Plugin := TGrymPlugin.Create('company', 'plugin_name', 'Имя плагина', ['ru'])
           .SetRunController(TRunController.Create);
         pPlugin := Plugin;
-
+    
         Result  := S_OK;
      end
      else
@@ -42,11 +42,10 @@
        Result := E_NOTIMPL;
      end;
     end;
-
+    
     exports
       CreateGrymPlugin;
-
-
+    ```
 
 * В контроллере инициализации уже прописываем все необходимые для загрузки плагина строки.
 
@@ -55,29 +54,33 @@
 
 * При создании dll проекта на Delphi формы автоматически не создаются, поэтому можно видоизменить код созданной формы под свои нужды
 
+
+    ```
     type
       TForm1 = class(TForm)
       end;
-
+    
     function Form1: TForm; // Вместо var  Form1: TForm;
-
+    
     implementation
-
+    
     {$R *.dfm}
-
-
+    
+    
     var
       _Form1: TForm; // А саму переменную прописываем в закрытой части
-
+    
     function Form1: TForm; // Вместо переменной наружу смотрит функция, которая при необходимости создает форму и возвращает её.
     begin
       if not Assigned(_Form1) then
       begin
         Application.CreateForm(TForm, _Form1);
       end;
-
+    
       Result := _Form1;
     end;
+    
+    ```
 
 Минус такого варианта, что при загрузке некоторых городов форма на все города будет единственная и, если для вызова формы используется метод Show, поведение такой формы будет не предсказуемое. Для устранения этой ошибки можно использовать класс TGrymKeeper и изменённую функцию возвращения формы.
 
@@ -196,16 +199,20 @@
 
 * Изменения в классе TMapPoint. Теперь он непосредственно является наследником IMapPoint.
 
-    MapPoint: TMapPoint
+    ```
+    MapPoint: TMapPoint;
     pMapPoint: IMapPoint;
-
+    
     pMapPoint := MapPoint.GetInterface; // Теперь не работает. Необходимо заменить на
     pMapPoint := MapPoint;
+    ```
 
 * Изменения в классе TDevPoint. Теперь он непосредственно является наследником IDevPoint.
 
-    DevPoint: TDevPoint
+    ```
+    DevPoint: TDevPoint;
     pDevPoint: IDevPoint;
-
+    
     pDevPoint := DevPoint.GetInterface; // Теперь не работает. Необходимо заменить на
     pDevPoint := DevPoint;
+    ```
